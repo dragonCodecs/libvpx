@@ -11,6 +11,78 @@ project(
     ]
 )
 
+
+c = meson.get_compiler('c')
+cpp = meson.get_compiler('cpp')
+
+configuration = configuration_data()
+features = configuration_data()
+
+c_args = []
+cpp_args = []
+link_args = []
+
+libyuv_cpp_args = []
+
+#######################
+###### configure ######
+#######################
+
+# all_targets is a list of all targets that can be configured
+# note that these should be in dependency order for now.
+all_targets = [
+    'libs',
+    'examples',
+    'tools',
+    'docs',
+]
+
+# all targets available are enabled, by default.
+foreach t : all_targets
+    features.set(t, true)
+endif
+
+# we don't use diff in Meson.
+
+perl_exe = find_program('perl', required: true)
+
+doxygen_exe = find_program('doxygen', required: true)
+
+if doxygen_exe.found()
+    doxygen_version = run_command(
+        doxygen_exe,
+        '--version',
+        check: true,
+        capture: true
+    )
+
+    if doxygen_version.version_compare('>= 2.0.0') or doxygen_version.version_compare('>= 1.6.0') or doxygen_version.version_compare('>= 1.5.5.3')
+        features.set('doxygen', true)
+    endif
+endif
+
+# We don't disable codecs when their source directory does not exist
+# because it's Git and they all exist.
+
+# install everything except the sources, by default. sources will have
+# to be enabled when doing dist builds, since that's no longer a common
+# case.
+if features.get('doxygen', false)
+    features.set('install_docs', true)
+endif
+features.set('install_bins', true)
+features.set('install_libs', true)
+
+# This feature is governed by Meson
+features.set('static', get_option('default_library') == 'static')
+features.set('optimizations', true)
+# This feature is governed by Meson
+features.set('dependency_tracking', true)
+features.set('spatial_resampling', true)
+features.set('multithread', true)
+features.set('os_support', true)
+features.set('temporal_denoising', true)
+
 CODECS = [
     'vp8_encoder',
     'vp8_decoder',
@@ -133,19 +205,10 @@ CONFIG_LIST = [
     'mismatch_debug',
 ] + EXPERIMENT_LIST
 
-c = meson.get_compiler('c')
-cpp = meson.get_compiler('cpp')
+# process #
+codecs = get_option('codecs').disable_auto_if(features.get('codecs', false)).allowed()
 
-configuration = configuration_data()
-features = configuration_data()
-
-c_args = []
-cpp_args = []
-link_args = []
-
-libyuv_cpp_args = []
-
-# process_common_toolchain
+##### process_common_toolchain ######
 
 gcc_target = ''
 tgt_isa = target_machine.cpu_family()
@@ -379,3 +442,8 @@ endif
 # static const char* const cfg = "$CONFIGURE_ARGS";
 # const char *vpx_codec_build_config(void) {return cfg;}
 # EOF
+
+vpx_config_h = configure_file(
+    output: 'vpx_config.h',
+    configuration: {}
+)
