@@ -6,8 +6,8 @@
 import re
 
 THINGS = [
-    'configure',
     'build/make/configure.sh',
+    'configure',
 ]
 
 def parse_options() -> dict:
