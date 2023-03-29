@@ -1,3 +1,8 @@
+option('enable_features', type: 'array', description: 'Enable undocumented configuration features')
+option('disable_features', type: 'array', description: 'Disable undocumented configuration features')
+option('force_enable_features', type: 'array', description: 'Set these undocumented configuration flags as enabled')
+option('force_disable_features', type: 'array', description: 'Set these undocumented configuration flags as disabled')
+option('size_limit', type: 'string', description: 'max size to allow in the decoder')
 #### --- GENERATED EXTERN OPTIONS --- ####
 option('extra_warnings', type: 'feature', value: 'auto', description: 'emit harmless warnings (always non-fatal)')
 # option('werror', type: 'feature', value: 'auto', description: 'treat warnings as errors, if possible')
@@ -6,7 +11,7 @@ option('pic', type: 'feature', value: 'auto', description: 'turn on/off Position
 option('ccache', type: 'feature', value: 'auto', description: 'turn on/off compiler cache')
 option('debug', type: 'feature', value: 'auto', description: 'enable/disable debug mode')
 option('gprof', type: 'feature', value: 'auto', description: 'enable/disable gprof profiling instrumentation')
-option('gcov', type: 'feature', value: 'auto', description: 'enable/disable gcov coverage instrumentation')
+# option('gcov', type: 'feature', value: 'auto', description: 'enable/disable gcov coverage instrumentation')
 option('thumb', type: 'feature', value: 'auto', description: 'enable/disable building arm assembly in thumb mode')
 option('install_docs', type: 'feature', value: 'auto', description: 'control whether docs are installed')
 option('install_bins', type: 'feature', value: 'auto', description: 'control whether binaries are installed')

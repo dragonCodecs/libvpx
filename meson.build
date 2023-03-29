@@ -205,28 +205,179 @@ CONFIG_LIST = [
     'mismatch_debug',
 ] + EXPERIMENT_LIST
 
+# this is the list of toggleable options in meson_options.txt
+# EXCEPT for a couple that I've separated because they're
+# derived from the Meson configuration.
+CMDLINE_SELECT = [
+    # 'dependency_tracking', # Meson enabled by default (see above)
+    # 'external_build', # Meson has no idea of toolchains
+    # 'extra_warnings', # Meson handled
+    # 'werror', # Meson handled
+    'install_docs',
+    'install_bins',
+    'install_libs',
+    'install_srcs',
+    # 'debug', # Meson handled
+    'gprof',
+    # 'gcov', # Meson handled
+    'pic',
+    # 'optimizations', # Meson handled
+    # 'ccache', # Meson handled
+    'runtime_cpu_detect',
+    'thumb',
+
+    'libs',
+    'examples',
+    'tools',
+    'docs',
+    # 'libc', # Meson has no idea of libc
+    # 'as', # Meson handled
+    # 'size_limit', # Meson handled
+    'codec_srcs',
+    'debug_libs',
+
+    'dequant_tokens',
+    'dc_recon',
+    'postproc',
+    'vp9_postproc',
+    'multithread', # Meson handled
+    'internal_stats', # Meson handled
+] + CODECS + CODECS_FAMILIES + [
+    'static_msvcrt',
+    'spatial_resampling',
+    'realtime_only',
+    'onthefly_bitpacking',
+    'error_concealment',
+    'shared',
+    'static',
+    'small',
+    'postproc_visualizer',
+    'unit_tests',
+    'webm_io',
+    'libyuv',
+    'decode_perf_tests',
+    'encode_perf_tests',
+    'multi_res_encoding',
+    'temporal_denoising',
+    'vp9_temporal_denoising',
+    'consistent_recode',
+    'coefficient_range_checking',
+    'better_hw_compatibility',
+    'vp9_highbitdepth',
+    'experimental',
+    'always_adjust_bpm',
+    'bitstream_debug',
+    'mismatch_debug',
+]
+
 # process #
-codecs = get_option('codecs').disable_auto_if(features.get('codecs', false)).allowed()
 
-##### process_common_toolchain ######
 
-gcc_target = ''
+# process_cmdline #
+
+features.set('extra_warnings', get_option('warning_level') >= 2)
+features.set('werror', get_option('werror'))
+features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
+features.set('gcov', get_option('b_coverage'))
+# Warning: we drop Yasm compatibility because Meson
+# provides NASM support by default
+features.set('as', add_language('nasm'))
+size_limit_value = get_option('size_limit', '').split('x')
+if size_limit_value.length() != 2
+    error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
+else
+    w = size_limit_value[0].to_int()
+    h = size_limit_value[1].to_int()
+    if w <= 0 or h <= 0
+        error('Invalid size-limit: too small.')
+    elif w >= 65536 or h >= 65536
+        error('Invalid size-limit: too big.')
+    else
+        c_args += [
+            '-DDECODE_WIDTH_LIMIT=@0@'.format(w),
+            '-DDECODE_HEIGHT_LIMIT=@0@'.format(h),
+            language: 'c',
+        ]
+        features.set('size_limit', true)
+    endif
+endif
+
+enable_features = get_option('enable_features')
+disable_features = get_option('disable_features')
+force_disable_features = get_option('force_disable_features')
+force_enable_features = get_option('force_enable_features')
+
+# Iterates through positional parameters, checks to confirm the parameter has
+# not been explicitly (force) disabled, and enables the setting controlled by
+# the parameter when the setting is not disabled.
+foreach feature: enable_features
+    if not features.has(feature) or feature.get(feature, true)
+        if not feature.get(feature, true)
+            message('\t enabling @0@'.format(feature))
+        endif
+        features.set(feature, true)
+    endif
+endif
+
+# Iterates through positional parameters, checks to confirm the parameter has
+# not been explicitly (force) enabled, and disables the setting controlled by
+# the parameter when the setting is not enabled.
+foreach feature: disable_features
+    if not features.has(feature) or not feature.get(feature, false)
+        if not feature.get(feature, false)
+            message('\t disabling @0@'.format(feature))
+        endif
+        features.set(feature, false)
+    endif
+endif
+
+foreach feature: force_disable_features
+    message('\t forcibly disabling @0@'.format(feature))
+    features.set(feature, false)
+endif
+foreach feature: force_enable_features
+    message('\t forcibly enabling @0@'.format(feature))
+    features.set(feature, true)
+endif
+
+# TODO: check the rest of cmdlist_set
+
+## post_process_common_cmdline ##
+
+## post_process_cmdline ##
+
+if features.get('coefficient_range_checking', false)
+    message('coefficient-range-checking is for decoders only, disabling encoders')
+    if not features.has('vp8_encoder') or not feature.get('vp8_encoder', false)
+        features.set('vp8_encoder', false)
+    endif
+    if not features.has('vp9_encoder') or not feature.get('vp9_encoder', false)
+        features.set('vp9_encoder', false)
+    endif
+endif
+
+### process_toolchain ###
+#### process_common_toolchain ####
+
 tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
-float_abi = ''
 
 if tgt_isa == 'arm'
-    gcc_target = run_command('gcc', '-dumpmachine', check: false)
-    if gcc_target.contains('hardfloat') or gcc_target.contains('gnueabihf')
+    # The __SOFTFP__ macro is unreliable, clang defines it
+    # as __SOFT_FP__. The other one matches the configure script better.
+    if compiler.get_define('__ARM_PCS_VFP') != ''
         float_abi = 'hard'
     else
         float_abi = 'softfp'
     endif
 endif
 
-if tgt_os == 'darwin'
-    gcc_target = run_command('gcc', '-dumpmachine', check: false)
+# The gcc -dumpmachine bit is used to force -mmacosx-version-min/max
+if target_machine.system() == 'darwin'
+    warning('macOS target detected, please supply the --mmacosx-version-* flags through -Dc_flags or a native file')
 endif
+
+
 
 # process_toolchain
 
