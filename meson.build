@@ -374,8 +374,8 @@ if tgt_isa == 'arm'
 endif
 
 # The gcc -dumpmachine bit is used to force -mmacosx-version-min/max
-if target_machine.system() == 'darwin'
-    warning('macOS target detected, please supply the --mmacosx-version-* flags through -Dc_flags or a native file')
+if ['darwin', 'ios', 'tvos'].contains(target_machine.system())
+	warning('Apple target detected, please supply the --m(macos|ios)-version-* and -isysroot flags through -Dc_flags or a native file')
 endif
 
 
