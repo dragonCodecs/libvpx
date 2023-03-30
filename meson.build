@@ -310,6 +310,7 @@ force_enable_features = get_option('force_enable_features')
 # Iterates through positional parameters, checks to confirm the parameter has
 # not been explicitly (force) disabled, and enables the setting controlled by
 # the parameter when the setting is not disabled.
+# soft_enable
 foreach feature: enable_features
 	if not features.has(feature) or feature.get(feature, true)
 		if not feature.get(feature, true)
