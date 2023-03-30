@@ -378,6 +378,25 @@ if ['darwin', 'ios', 'tvos'].contains(target_machine.system())
 	warning('Apple target detected, please supply the --m(macos|ios)-version-* and -isysroot flags through -Dc_flags or a native file')
 endif
 
+# Enable the architecture family
+if tgt_isa == 'arm' or tgt_isa == 'aarch64'
+	features.set('arm', true)
+elif tgt_isa.starts_with('mips')
+	features.set('mips', true)
+elif tgt_isa.starts_with('ppc')
+	features.set('ppc', true)
+elif tgt_isa == 'loongarch64'
+	features.set('loongarch', true)
+	loongson_features = ['lsx', 'lasx']
+	foreach feature : loongson_features
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
+		endif
+	endif
+endif
 
 
 # process_toolchain
