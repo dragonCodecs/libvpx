@@ -8,19 +8,20 @@ project(
 		'c_std=gnu89',
 		'cpp_std=gnu++11',
 		'warning_level=2',
+		'b_bitcode=true',
 	]
 )
-
-
-c = meson.get_compiler('c')
-cpp = meson.get_compiler('cpp')
 
 configuration = configuration_data()
 features = configuration_data()
 
 c_args = []
 cpp_args = []
+asm_args = []
+tune_cflags = ''
+rtcd_options = []
 link_args = []
+extra_libs = []
 
 libyuv_cpp_args = []
 
@@ -301,6 +302,7 @@ else
 		features.set('size_limit', true)
 	endif
 endif
+tune_cpu = get_option('tune_cpu', '')
 
 enable_features = get_option('enable_features')
 disable_features = get_option('disable_features')
@@ -360,13 +362,23 @@ endif
 ### process_toolchain ###
 #### process_common_toolchain ####
 
+c = meson.get_compiler('c')
+cpp = meson.get_compiler('cpp')
+asm = disabler()
+if add_language('asm')
+	asm = meson.get_compiler('as')
+endif
+
 tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
+if tgt_os == 'windows' or tgt_os == 'cygwin'
+	tgt_os == 'windows'
+endif
 
 if tgt_isa == 'arm'
 	# The __SOFTFP__ macro is unreliable, clang defines it
 	# as __SOFT_FP__. The other one matches the configure script better.
-	if compiler.get_define('__ARM_PCS_VFP') != ''
+	if c.get_define('__ARM_PCS_VFP') != ''
 		float_abi = 'hard'
 	else
 		float_abi = 'softfp'
@@ -398,16 +410,191 @@ elif tgt_isa == 'loongarch64'
 	endif
 endif
 
-# PIC is probably what we want when building shared libs
-if get_option('default_library') != 'static'
-	feature = 'pic'
+# Handle Solaris variants. Solaris 10 needs -lposix4
+if tgt_os == 'sunos'
+	extra_libs += compiler.find_library('posix4', required: true)
+endif
+
+if tgt_isa == 'arm' or tgt_isa == 'aarch64'
+	feature = 'neon'
 	if not features.has(feature) or feature.get(feature, true)
 		if not feature.get(feature, true)
 			message('\t enabling @0@'.format(feature))
 		endif
 		features.set(feature, true)
 	endif
+
+	if tgt_isa == 'arm'
+		# Only enable neon_asm when neon is also enabled.
+		if features.get('neon', false)
+			feature = 'neon_asm'
+			if not features.has(feature) or feature.get(feature, true)
+				if not feature.get(feature, true)
+					message('\t enabling @0@'.format(feature))
+				endif
+				features.set(feature, true)
+			endif
+		endif
+		# If someone tries to force it through, die.
+		if not features.get('neon', false) and features.get('neon_asm', false)
+			error('Disabling neon while keeping neon-asm is not supported')
+		endif
+	endif
+
+	if compiler.get_id() == 'gcc' or compiler.get_id() == 'clang'
+		tune_cflags = '-mtune=@0@'
+
+		if tgt_isa == 'arm'
+			if features.get('neon', false) or features.get('neon_asm', false)
+				gcc_flags = ['-mfpu=neon']
+				c_args += c.get_supported_arguments(gcc_flags) #-ftree-vectorize
+				cpp_args += cpp.get_supported_arguments(gcc_flags)
+				asm_args += asm.get_supported_arguments(gcc_flags)
+			endif
+		endif
+
+		asm_conversion_exe = find_program('build/make/ads2gas.pl', required: true)
+		asm_conversion_cmd = [asm_conversion_exe]
+		
+		if tgt_os == 'windows'
+			asm_conversion_cmd += ['-noelf']
+			features.set('thumb', true)
+		endif
+
+		if features.get('thumb', true)
+			asm_conversion_cmd += ['-thumb']
+			gcc_flags = ['-mthumb']
+			c_args += c.get_supported_arguments(gcc_flags) #-ftree-vectorize
+			cpp_args += cpp.get_supported_arguments(gcc_flags)
+			gcc_flags = ['-mthumb', '-mimplicit-it=always']
+			asm_args += asm.get_supported_arguments(gcc_flags)
+		endif
+	elif compiler.get_argument_syntax() == 'msvc'
+		# A number of ARM-based Windows platforms are constrained by their
+		# respective SDKs' limitations. Fortunately, these are all 32-bit ABIs
+		# and so can be selected as 'win32'.
+
+		if tgt_isa == 'arm'
+			asm_conversion_exe = find_program('build/make/ads2armasm_ms.pl', required: true)
+			asm_conversion_cmd = [asm_conversion_exe]
+			features.set('multithread', false)
+			features.set('unit_tests', false)
+			# We drive MSVC through Ninja here, so don't disable examples nor tools.
+		else
+			# Windows 10 on ARM, on the other hand, has full Windows SDK support
+			# for building Win32 ARM64 applications in addition to ARM64
+			# Windows Store apps. It is the only 64-bit ARM ABI that
+			# Windows supports, so it is the default definition of 'win64'.
+			# ARM64 build support officially shipped in Visual Studio 15.9.0.
+
+			# Because the ARM64 Windows SDK's arm_neon.h is ARM32-specific
+			# while LLVM's is not, probe its validity.
+			if features.get('neon', false)
+				if not c.has_header('arm_neon.h')
+					features.set('win_arm64_neon_h_workaround', c.has_header('arm64_neon.h'))
+				endif
+			endif
+		endif
+	endif
+
+	if tgt_os == 'android'
+		message('Assuming standalone build with NDK toolchain.')
+		features.set('static', true)
+		feature = 'unit_tests'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
+		endif
+	elif tgt_os == 'darwin'
+		# Darwin toolchain and embed-bitcode options are Meson handled.
+		asm_conversion_exe = find_program('build/make/ads2gas_apple.pl', required: true)
+		asm_conversion_cmd = [asm_conversion_exe]
+	elif tgt_os == 'linux'
+		features.set('linux', true)
+	endif
+elif tgt_isa.starts_with('mips')
+	tune_cflags = '-mtune=@0@'
+
+	if tune_cpu != ''
+		if tune_cpu == 'p5600'
+			gcc_flags = ['-mips32r5', '-mload-store-pairs', '-msched-weight', '-mhard-float', '-mfp64']
+			c_args += c.get_supported_arguments(gcc_flags)
+			cpp_args += cpp.get_supported_arguments(gcc_flags)
+			gcc_flags = ['-mips32r5', '-mhard-float', '-mfp64']
+			asm_args += asm.get_supported_arguments(gcc_flags)
+			gcc_flags = ['-mfp64']
+			link_args += c.get_supported_link_arguments(gcc_flags)
+		elif ['i6400', 'p6600'].contains(tune_cpu)
+			gcc_flags = ['-mips64r6', '-mabi=64', '-msched-weight', '-mload-store-pairs', '-mhard-float', '-mfp64']
+			c_args += c.get_supported_arguments(gcc_flags)
+			cpp_args += cpp.get_supported_arguments(gcc_flags)
+			gcc_flags = ['-mips64r6', '-mabi=64', '-mhard-float', '-mfp64']
+			asm_args += asm.get_supported_arguments(gcc_flags)
+			gcc_flags = ['-mips64r6', '-mabi=64', '-mfp64']
+			link_args += c.get_supported_link_arguments(gcc_flags)
+		elif tune_cpu.starts_with('loongson3')
+			if c.get_supported_arguments('-march=loongson3a')
+				loongson_features = ['mmi', 'msa']
+				foreach feature: loongson_features
+					if not features.has(feature) or feature.get(feature, true)
+						if not feature.get(feature, true)
+							message('\t enabling @0@'.format(feature))
+						endif
+						features.set(feature, true)
+					else
+						features.set(feature, false)
+					endif
+				endif
+			else
+				features.set('mmi', true)
+			endif
+
+			if features.get('mmi', false) or features.get('msa', false)
+				feature = 'runtime_cpu_detect'
+				if not features.has(feature) or feature.get(feature, true)
+					if not feature.get(feature, true)
+						message('\t enabling @0@'.format(feature))
+					endif
+					features.set(feature, true)
+				endif
+			endif
+
+			if enabled msa; then
+				# TODO(libyuv:793)
+				# The new mips functions in libyuv do not build
+				# with the toolchains we currently use for testing.
+				feature = 'libyuv'
+				if not features.has(feature) or not feature.get(feature, false)
+					if not feature.get(feature, false)
+						message('\t disabling @0@'.format(feature))
+					endif
+					features.set(feature, false)
+				endif
+			endif
+
+			# KPIC is a flag that is valid only for SunCC.
+			# As such, we'll use the Meson derived version.
+		endif
+	endif
+elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
+	if features.get('vsx', false)
+		rtcd_options += ['--disable-vsx']
+	endif
+
+	if tune_cpu.starts_with('power')
+		tune_cflags = '-mcpu=@0@'
+	endif
+elif tgt_isa.starts_with('x86')
+
+elif tgt_isa == 'loongarch64'
+
+elif compiler.get_argument_syntax() != 'msvc'
+	features.set('gcc', true)
 endif
+
+# Try to enable CPU specific tuning
 
 # process_toolchain
 
