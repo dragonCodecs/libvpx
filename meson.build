@@ -398,6 +398,16 @@ elif tgt_isa == 'loongarch64'
 	endif
 endif
 
+# PIC is probably what we want when building shared libs
+if get_option('default_library') != 'static'
+	feature = 'pic'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
+	endif
+endif
 
 # process_toolchain
 
