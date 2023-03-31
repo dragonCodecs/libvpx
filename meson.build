@@ -12,7 +12,6 @@ project(
 	]
 )
 
-configuration = configuration_data()
 features = configuration_data()
 
 as = 'nasm'
@@ -273,6 +272,8 @@ CMDLINE_SELECT = [
 	'mismatch_debug',
 ]
 
+VAR_LIST = []
+
 # process #
 
 
@@ -294,11 +295,9 @@ else
 	elif w >= 65536 or h >= 65536
 		error('Invalid size-limit: too big.')
 	else
-		c_args += [
-			'-DDECODE_WIDTH_LIMIT=@0@'.format(w),
-			'-DDECODE_HEIGHT_LIMIT=@0@'.format(h),
-			language: 'c',
-		]
+		var_list += ['DECODE_WIDTH_LIMIT', 'DECODE_HEIGHT_LIMIT']
+		features.set('DECODE_WIDTH_LIMIT', w)
+		features.set('DECODE_HEIGHT_LIMIT', h)
 		features.set('size_limit', true)
 	endif
 endif
@@ -889,7 +888,7 @@ endif
 # Try to determine target endianness
 features.set('big_endian', target_machine.endian() == 'big')
 if c.compiles('static inline int function(void) {}', name: 'supports inline keyword')
-	configuration.set('INLINE', 'inline')
+	features.set('INLINE', 'inline')
 endif
 
 # Almost every platform uses pthreads.
@@ -1211,19 +1210,82 @@ if features.get('neon', false)
 	c.has_header('arm_neon.h', required: true)
 endif
 
-##
-## END APPLICATION SPECIFIC CONFIGURATION
-##
-# CONFIGURE_ARGS="$@"
-# process "$@"
-# print_webm_license ${BUILD_PFX}vpx_config.c "/*" " */"
-# cat <<EOF >> ${BUILD_PFX}vpx_config.c
-# #include "vpx/vpx_codec.h"
-# static const char* const cfg = "$CONFIGURE_ARGS";
-# const char *vpx_codec_build_config(void) {return cfg;}
-# EOF
+### process_targets ###
+
+cfgdata = configuration_data()
+
+cfgdata.set('INLINE', features.get('INLINE', ''))
+
+foreach arch : ARCH_LIST
+	cfgdata.set10('VPX_ARCH_@0@'.format(arch.to_upper()), features.get(arch, false))
+endif
+
+foreach have : HAVE_LIST
+	cfgdata.set10('HAVE_@0@'.format(have.to_upper()), features.get(have, false))
+endif
+
+foreach feature : CONFIG_LIST
+	cfgdata.set10('CONFIG_@0@'.format(feature.to_upper()), features.get(feature, false))
+endif
+
+foreach var : VAR_LIST
+	cfgdata.set10(var.to_upper(), features.get(var, false))
+endif
+
+version_string = meson.project_version()
+version = meson.project_version().split('.')
+
+git = find_program('git', required: false)
+
+if git.found()
+	git_tag = run_command('git describe --match=v[0-9]*', capture: true)
+	if git_tag.stdout() != ''
+		version_string = git_tag.stdout().strip()
+		version = version_string.substring(1).split('.')
+	endif
+endif
+
+cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_string))
+cfgdata.set_quoted('VERSION_STRING_NOSP', version_string)
+#since they'll be used as integers below make sure they are or force to 0
+cfgdata.set('VERSION_MAJOR', version.get(0, 0))
+cfgdata.set('VERSION_MINOR', version.get(1, 0))
+cfgdata.set('VERSION_PATCH', version.get(2, 0))
+cfgdata.set('VERSION_EXTRA', version.get(3, 0))
+cfgdata.set('VERSION_PACKED', '((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))')
 
 vpx_config_h = configure_file(
 	output: 'vpx_config.h',
-	configuration: {}
+	configuration: cfgdata,
 )
+
+if features.get('win_arm64_neon_h_workaround')
+	vpx_neon_h = configure_file(
+		input: 'meson/arm_neon.h',
+		output: 'arm_neon.h',
+		copy: true
+	)
+endif
+
+##
+## END APPLICATION SPECIFIC CONFIGURATION
+##
+
+vpx_config_c = configure_file(
+	input: 'meson/vpx_config.c',
+	output: 'vpx_config.c',
+	configuration: {
+		'CONFIGURE_ARGS': '"Built with Meson @0@"'.format(meson.version())
+	}
+)
+
+subdir('vp8')
+subdir('vp9')
+subdir('vpx')
+subdir('vpx_dsp')
+subdir('vpx_mem')
+subdir('vpx_ports')
+subdir('vpx_scale')
+subdir('vpx_util')
+subdir('tools')
+subdir('examples')
