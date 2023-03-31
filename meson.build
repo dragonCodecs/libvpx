@@ -1,6 +1,6 @@
 project(
 	'libvpx',
-	'c', 'cpp',
+	'c', 'cpp', 'nasm',
 	version: '1.3.1',
 	default_options: [
 		# Enforce c89 for c files. Don't be too strict about it though. Allow
@@ -280,9 +280,7 @@ features.set('extra_warnings', get_option('warning_level') >= 2)
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
-# Warning: we drop Yasm compatibility because Meson
-# provides NASM support by default
-features.set('as', add_language('nasm'))
+features.set('as', true)
 size_limit_value = get_option('size_limit', '').split('x')
 if size_limit_value.length() != 2
 	error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
@@ -374,6 +372,8 @@ tgt_os = target_machine.system()
 if tgt_os == 'windows' or tgt_os == 'cygwin'
 	tgt_os == 'windows'
 endif
+
+# todo: implement feature enable for triplet
 
 if tgt_isa == 'arm'
 	# The __SOFTFP__ macro is unreliable, clang defines it
@@ -587,7 +587,159 @@ elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 		tune_cflags = '-mcpu=@0@'
 	endif
 elif tgt_isa.starts_with('x86')
+	if tgt_os == 'android'
+		feature = 'realtime_only'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
+		endif
+	elif tgt_os == 'windows'
+		if features.get('gcc', false)
+			gcc_flags = ['-fno-common']
+			c_args += c.get_supported_arguments(gcc_flags)
+			cpp_args += cpp.get_supported_arguments(gcc_flags)
+		endif
+	# Solaris is Meson handled, and OS/2 is unsupported by Meson.
+	endif 
 
+	if cpp.get_id() == 'icc'
+		gcc_flags = ['-use-msasm']
+		c_args += c.get_supported_arguments(gcc_flags)
+		cpp_args += cpp.get_supported_arguments(gcc_flags)
+		# add -no-intel-extensions to suppress warning #10237
+		# refer to http://software.intel.com/en-us/forums/topic/280199
+		# Meson: -i-static is deprecated
+		# See https://www.cita.utoronto.ca/~merz/intel_c10b/main_cls/mergedProjects/copts_cls/common_options/option_i_static.htm
+		gcc_flags = ['-static-intel', '-no-intel-extensions']
+		link_args += c.get_supported_link_arguments(gcc_flags)
+
+		if tgt_isa == 'x86_64'
+			# -ipo is LTO, -static and -O3 all are Meson handled
+			gcc_flags = ['-no-prec-div']
+			c_args += c.get_supported_arguments(gcc_flags)
+			cpp_args += cpp.get_supported_arguments(gcc_flags)
+			# xiar is also Meson handled
+			if tune_cpu.starts_with('atom')
+				tune_cflags = '-x'
+				tune_cpu = 'SSE3_ATOM'
+			else
+				tune_cflags = '-march=@0@'
+			endif
+		endif
+	elif cpp.get_argument_syntax() != 'msvc'
+		tune_cflags = '-march='
+		# #for 32 bit x86 builds, -O3 did not turn on this flag
+		if get_option('optimization') >= '3' and not get_option('gprof')
+			gcc_flags = ['-fomit-frame-pointer']
+			c_args += c.get_supported_arguments(gcc_flags)
+			cpp_args += cpp.get_supported_arguments(gcc_flags)
+		endif
+	else
+		# Based on the Gerrit review, it seems the author intended to ban
+		# VS 2017 and earlier.
+		# See https://chromium-review.googlesource.com/c/webm/libvpx/+/751863
+		if c.version().version_compare('< 19.20.27508')
+			warn('This version of Visual Studio does not support avx512, disabling.....')
+			rtcd_options += ['--disable-avx512']
+			feature = 'avx512'
+			if not features.has(feature) or not feature.get(feature, false)
+				if not feature.get(feature, false)
+					message('\t disabling @0@'.format(feature))
+				endif
+				features.set(feature, false)
+			endif
+		endif
+	endif
+
+	feature = 'runtime_cpu_detect'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
+	endif
+
+	# Unline the original, we do can test cflags here :)
+	disable_exts = false
+	foreach ext : ARCH_EXT_LIST_X86
+		# disable higher order extensions to simplify asm dependencies
+		if disable_exts then
+			if features.get(ext, false)
+				rtcd_options += ['--disable-@0@'.format(ext)]
+				message('\t disabling @0@'.format(ext))
+				features.set(ext, false)
+			endif
+		elif not features.get(ext, false) then
+			disable_exts = true
+		else
+			if ext == 'avx512'
+				exts = ['avx512', 'avx512f', 'avx512cd', 'avx512bw', 'avx512dq', 'avx512dl']
+				foreach feature : exts
+					# todo audit ! disabled
+					if features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
+						rtcd_options += ['--disable-@0@'.format(feature)]
+					else
+						if not features.has(feature) or feature.get(feature, true)
+							if not feature.get(feature, true)
+								message('\t enabling @0@'.format(feature))
+							endif
+							features.set(feature, true)
+						endif
+					endif
+				endif
+				if not c.compiles('''
+					#include <immintrin.h>
+					void f(void) {
+						__m512i x = _mm512_set1_epi16(0);
+						(void)x;
+					}
+					''',
+					name: 'supports AVX512',
+					args: '-mavx512f'
+				)
+					warn('disabling avx512: not supported by compiler')
+					features.set('avx512', false)
+					rtcd_options += ['--disable-avx512']
+				endif
+			else
+				# use the shortened version for the flag: sse4_1 -> sse4
+				exts = [ext]
+				if ext.contains('_')
+					exts += [ext.split('_')[0]]
+				endif
+				foreach feature : exts
+					# todo audit ! disabled
+					if features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
+						rtcd_options += ['--disable-@0@'.format(feature)]
+					else
+						if not features.has(feature) or feature.get(feature, true)
+							if not feature.get(feature, true)
+								message('\t enabling @0@'.format(feature))
+							endif
+							features.set(feature, true)
+						endif
+					endif
+				endif
+			endif
+		endif
+	endforeach
+
+	nasm_exe = find_program('nasm', required: false)
+	if nasm_exe.found()
+		# Apple ships version 0.98 of nasm through at least Xcode 6. Revisit
+		# this check if they start shipping a compatible version.
+		runresult = run_command(nasm_exe, '-v', capture: true, check: false)
+		if runresult.stdout().contains('Apple')
+			warn('Unsupported version of nasm: @0@'.format(runresult.stdout()))
+			features.set('as', false)
+		endif
+	endif
+
+	if not features.get('as', false)
+		error('Neither yasm nor nasm have been found. See the prerequisites section in the README for more info.')
+	endif
 elif tgt_isa == 'loongarch64'
 
 elif compiler.get_argument_syntax() != 'msvc'
