@@ -1,6 +1,6 @@
 project(
 	'libvpx',
-	'c', 'cpp', 'nasm',
+	'c', 'cpp',
 	version: '1.3.1',
 	default_options: [
 		# Enforce c89 for c files. Don't be too strict about it though. Allow
@@ -14,6 +14,8 @@ project(
 
 configuration = configuration_data()
 features = configuration_data()
+
+as = 'nasm'
 
 c_args = []
 cpp_args = []
@@ -280,7 +282,7 @@ features.set('extra_warnings', get_option('warning_level') >= 2)
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
-features.set('as', true)
+features.set('as', add_languages('nasm'))
 size_limit_value = get_option('size_limit', '').split('x')
 if size_limit_value.length() != 2
 	error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
@@ -369,9 +371,6 @@ endif
 
 tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
-if tgt_os == 'windows' or tgt_os == 'cygwin'
-	tgt_os == 'windows'
-endif
 
 # todo: implement feature enable for triplet
 
@@ -385,11 +384,32 @@ if tgt_isa == 'arm'
 	endif
 endif
 
-# The gcc -dumpmachine bit is used to force -mmacosx-version-min/max
-if ['darwin', 'ios', 'tvos'].contains(target_machine.system())
+if tgt_os == 'windows' or tgt_os == 'cygwin'
+	tgt_os == 'windows'
+elif ['darwin', 'ios', 'tvos'].contains(tgt_os)
+	# The gcc -dumpmachine bit is used to force -mmacosx-version-min/max
 	warning('Apple target detected, please supply the --m(macos|ios)-version-* and -isysroot flags through -Dc_flags or a native file')
-endif
 
+	if tgt_os == 'darwin'
+		# Detect if iOS, tvOS...
+		xcrun_exe = find_program('xcrun', required: true)
+
+		# The only one actually used is the iPhone simulator-- see later
+		# is_ios = c.get_define('TARGET_OS_MAC', prefix: '#include <TargetConditionals.h>')
+		# is_tvos = c.get_define('TARGET_OS_TV', prefix: '#include <TargetConditionals.h>')
+		is_simulator = c.get_define('TARGET_OS_SIMULATOR', prefix: '#include <TargetConditionals.h>')
+
+		# if is_ios.to_int() == 1
+		# 	tgt_os = 'ios'
+		# elif is_tvos.to_int() == 1
+		# 	tgt_os = 'tvos'
+		# el
+		if is_simulator.to_int() == 1
+			tgt_os = 'iphonesimulator'
+		endif
+	endif
+endif
+ 
 # Enable the architecture family
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	features.set('arm', true)
@@ -440,6 +460,9 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			error('Disabling neon while keeping neon-asm is not supported')
 		endif
 	endif
+
+	asm_conversion_exe = ''
+	asm_conversion_cmd = []
 
 	if compiler.get_id() == 'gcc' or compiler.get_id() == 'clang'
 		tune_cflags = '-mtune=@0@'
@@ -561,7 +584,7 @@ elif tgt_isa.starts_with('mips')
 				endif
 			endif
 
-			if enabled msa; then
+			if features.get('msa', false)
 				# TODO(libyuv:793)
 				# The new mips functions in libyuv do not build
 				# with the toolchains we currently use for testing.
@@ -653,6 +676,11 @@ elif tgt_isa.starts_with('x86')
 		endif
 	endif
 
+	x86_bits = 32
+	if target_machine.cpu_family() == 'x86_64'
+		x86_bits = 64
+	endif
+
 	feature = 'runtime_cpu_detect'
 	if not features.has(feature) or feature.get(feature, true)
 		if not feature.get(feature, true)
@@ -727,28 +755,195 @@ elif tgt_isa.starts_with('x86')
 	endforeach
 
 	nasm_exe = find_program('nasm', required: false)
+	yasm_exe = find_program('yasm', required: false)
 	if nasm_exe.found()
 		# Apple ships version 0.98 of nasm through at least Xcode 6. Revisit
 		# this check if they start shipping a compatible version.
 		runresult = run_command(nasm_exe, '-v', capture: true, check: false)
-		if runresult.stdout().contains('Apple')
+		out = runresult.stdout().strip()
+		if out.contains('Apple')
 			warn('Unsupported version of nasm: @0@'.format(runresult.stdout()))
 			features.set('as', false)
+		elif ['linux', 'sunos', 'android'].contains(tgt_os)
+			out = out.split()
+			if out[1].to_lower() == 'version'
+				if out[2].version_compare('<2.09')
+					error('nasm @0@ does not support section alignment'.format(out[2]))
+				endif
+			else
+				error('unexpected nasm version string: @0@'.format(nasm_r.stdout()))
+			endif
 		endif
+	elif yasm_exe.found()
+		as = 'yasm'
+		# TODO: is this feature even needed? We can test the exe variables
+		features.set('as', true)
 	endif
 
 	if not features.get('as', false)
 		error('Neither yasm nor nasm have been found. See the prerequisites section in the README for more info.')
 	endif
-elif tgt_isa == 'loongarch64'
 
+	if tgt_os == 'windows' and target_machine.cpu_family() == 'x86'
+		# TODO: validate this is OK, we are relying on Meson's language support
+		asm_args += ['-f', 'win32']
+		if features.get('debug', false)
+			# Unsure why Google forces CodeView 8 here... maybe Yasm?
+			# See https://www.nasm.us/doc/nasmdoc8.html#section-8.5.3
+			asm_args += ['-g', 'cv8']
+		endif
+	elif tgt_os == 'windows' and target_machine.cpu_family() == 'x86_64'
+		# TODO: validate this is OK, we are relying on Meson's language support
+		asm_args += ['-f', 'win64']
+		if features.get('debug', false)
+			# Unsure why Google forces CodeView 8 here... maybe Yasm?
+			# See https://www.nasm.us/doc/nasmdoc8.html#section-8.5.3
+			asm_args += ['-g', 'cv8']
+		endif
+	elif ['linux', 'sunos', 'android'].contains(tgt_os)
+		asm_args += ['-f', 'elf@0@'.format(x86_bits)]
+		if features.get('debug', false)
+			asm_args += ['-g']
+			if as == 'yasm'
+				asm_args += ['dwarf2']
+			endif
+		endif
+	elif tgt_os == 'darwin'
+		asm_args += ['-f', 'macho@0@'.format(x86_bits)]
+		# Skipping the fPIC handling here as it's Meson handled.
+	elif tgt_os == 'iphonesimulator'
+		asm_args += ['-f', 'macho@0@'.format(x86_bits)]
+
+		sdk_version = run_command(xcrun_exe, '--sdk', tgt_os, '--show-sdk-version', check: true, capture: true)
+		if sdk_version.version_compare('> 8.0')
+			# yasm v1.3.0 doesn't know what -fembed-bitcode means, so turning it
+			# on is pointless (unless building a C-only lib). Warn the user, but
+			# do nothing here.
+			warn('Bitcode embed disabled for simulator targets.')
+		endif
+	else
+		warn('Unknown os @0@ while setting up Nasm flags'.format(tgt_os))
+	endif
+
+elif tgt_isa == 'loongarch64'
+	if features.get('lsx', true)
+		if not c.compiles('void foo(void) { __asm__ volatile(@0@); }'.format('"vadd.b $vr0, $vr1, $vr1"'))
+			features.set('lsx', false)
+		endif
+	endif
+	if features.get('lsx', true)
+		feature = 'runtime_cpu_detect'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
+		endif
+	endif
+	if features.get('lasx', true)
+		if not c.compiles('void foo(void) { __asm__ volatile(@0@); }'.format('"xvadd.b $xr0, $xr1, $xr1"'))
+			features.set('lasx', false)
+		endif
+	endif
+	if features.get('lasx', true)
+		feature = 'runtime_cpu_detect'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
+		endif
+	endif
 elif compiler.get_argument_syntax() != 'msvc'
 	features.set('gcc', true)
 endif
 
 # Try to enable CPU specific tuning
+if tune_cpu != ''
+	if tune_cflags != ''
+		tune = compiler.get_supported_arguments(tune_cflags.format(tune_cpu), checked: 'require')
+		c_args +=  [tune]
+	else
+		warn('CPU tuning not supported by this toolchain')
+	endif
+endif
 
-# process_toolchain
+# gcov is Meson handled
+
+if features.get('gprof' false)
+	gcc_flags = ['-pg']
+
+	c_args += c.get_supported_arguments(gcc_flags)
+	cpp_args += cpp.get_supported_arguments(gcc_flags)
+endif
+
+# optimizations are Meson handled
+
+# pic is Meson handled
+
+# dropping the longjmp interception check because it's been shipped for
+# well over a decade now.
+
+# gnu_strip is meson handled via Dstrip
+
+# Try to determine target endianness
+features.set('big_endian', target_machine.endian() == 'big')
+if c.compiles('static inline int function(void) {}', name: 'supports inline keyword')
+	configuration.set('INLINE', 'inline')
+endif
+
+# Almost every platform uses pthreads.
+if features.get('multithread', false)
+	threads_dep = c.find_library('threads', required: false)
+	if c.compiles('''
+		#include <pthread.h>
+		#include <stddef.h>
+		int main(void) { return pthread_create(NULL, NULL, NULL, NULL); }''',
+		name: 'supports pthreads',
+		dependencies: threads_dep
+	)
+		extra_libs += threads_dep
+	else
+		feature
+	endif
+endif
+
+# only for MIPS platforms
+if tgt_isa.starts_with('mips')
+	if features.get('big_endian', false)
+		if features.get('dspr2', false)
+			warn('dspr2 optimizations are available only for little endian platforms')
+			features.set('dspr2', false)
+		endif
+		if features.get('msa', false)
+			warn('msa optimizations are available only for little endian platforms')
+			features.get('msa', false)
+		endif
+		if features.get('mmi', false)
+			warn('mmi optimizations are available only for little endian platforms')
+			features.get('mmi', false)
+		endif
+	endif
+endif
+
+# only for LOONGARCH platforms
+if tgt_isa == 'loongarch64'
+	if features.get('big_endian', false)
+		if features.get('lsx', false)
+			warn('lsx optimizations are available only for little endian platforms')
+			features.set('lsx', false)
+		endif
+		if features.get('lasx', false)
+			warn('lasx optimizations are available only for little endian platforms')
+			features.get('lasx', false)
+		endif
+	endif
+endif
+
+if features.get('linux', true)
+	c_args += gcc_flags
+	cpp_args += gcc_flags
+endif
 
 features.set('extra_warnings', get_option('warning_level') >= 2)
 
@@ -860,9 +1055,12 @@ endif
 
 # Other toolchain specific defaults
 if target_machine.cpu_family() == 'x86' or target_machine.cpu_family() == 'x86_64'
-	# soft_enable
-	if not features.get('postproc', true)
-		features.set('postproc', true)
+	feature = 'postproc'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
 	endif
 endif
 
@@ -875,46 +1073,66 @@ endif
 
 # Enable unit tests by default if we have a working C++ compiler.
 if c.get_argument_syntax() == 'msvc'
-	# soft_enable
-	if not features.get('unit_tests', true)
-		features.set('unit_tests', true)
+	feature = 'unit_tests'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
 	endif
-	# soft_enable
-	if not features.get('webm_io', true)
-		features.set('webm_io', true)
+	feature = 'webm_io'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
 	endif
-	# soft_enable
-	if not features.get('libyuv', true)
-		features.set('libyuv', true)
+	feature = 'libyuv'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
 	endif
-elif target_machine.system() == 'android'
+elif tgt_os == 'android'
 	if c.get_supported_arguments('-std=gnu++11')
-		# soft_enable
-		if not features.get('webm_io', true)
-			features.set('webm_io', true)
+		feature = 'webm_io'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
 	endif
-	# soft_enable
-	if not features.get('libyuv', true)
-		features.set('libyuv', true)
+	feature = 'libyuv'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
 	endif
 	# GTestLog must be modified to use Android logging utilities.
-elif target_machine.system() == 'darwin'
+elif tgt_os == 'darwin'
 	# Meson already handles the cpp_std flag.
 	# iOS/ARM builds do not work with gtest. This does not match
 	# x86 targets.
-# Meson does not support iOS.
-# elif target_machine.system() == 'ios'
-#     if c.get_supported_arguments('-std=gnu++11')
-#         # soft_enable
-#         if not features.get('webm_io', true)
-#             features.set('webm_io', true)
-#         endif
-#     endif
-#     # soft_enable
-#     if not features.get('libyuv', true)
-#         features.set('libyuv', true)
-#     endif
+elif target_machine.system() == 'iphonesimulator'
+	if c.get_supported_arguments('-std=gnu++11')
+		feature = 'webm_io'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
+		endif
+	endif
+	feature = 'libyuv'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
+	endif
 elif target_machine.system() == 'windows'
 	# Some mingw toolchains don't have pthread available by default.
 	# Treat these more like visual studio where threading in gtest
