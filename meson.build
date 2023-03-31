@@ -1138,35 +1138,77 @@ elif target_machine.system() == 'windows'
 	# Treat these more like visual studio where threading in gtest
 	# would be disabled for the same reason.
 	if c.get_supported_arguments('-std=gnu++11')
-		# soft_enable
-		if not features.get('unit_tests', true)
-			features.set('unit_tests', true)
+		feature = 'unit_tests'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
-		if not features.get('webm_io', true)
-			features.set('webm_io', true)
+		feature = 'webm_io'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
 	endif
 	if cpp.compiles('int z;')
-		if not features.get('libyuv', true)
-			features.set('libyuv', true)
+		feature = 'libyuv'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
 	endif
 else
 	if features.get('pthread_h', false)
-		# soft_enable
-		if not features.get('unit_tests', true)
-			features.set('unit_tests', true)
+		feature = 'unit_tests'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
 	endif
-	# soft_enable
-	if not features.get('webm_io', true)
-		features.set('webm_io', true)
+	feature = 'webm_io'
+	if not features.has(feature) or feature.get(feature, true)
+		if not feature.get(feature, true)
+			message('\t enabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
 	endif
 	if cpp.compiles('int z;')
-		if not features.get('libyuv', true)
-			features.set('libyuv', true)
+		feature = 'libyuv'
+		if not features.has(feature) or feature.get(feature, true)
+			if not feature.get(feature, true)
+				message('\t enabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
 	endif
+endif
+
+### process_detect ###
+
+if features.get('shared', false)
+	if not ['linux', 'sunos', 'darwin', 'iphonesimulator'].contains(tgt_os)
+		if not features.get('gnu', false)
+			# Again, no OS/2 because Meson itself doens't support it
+			error('Shared library build is only supported on ELF and Darwin for now')
+		endif
+	endif
+endif
+
+features.set('unistd_h', c.has_header('unistd.h'))
+features.set('unistd_h', c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.'))
+if features.get('unistd_h', false)
+	features.set('vpx_ports', true)
+endif
+
+if features.get('neon', false)
+	c.has_header('arm_neon.h', required: true)
 endif
 
 ##
