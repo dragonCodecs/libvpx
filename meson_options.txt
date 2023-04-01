@@ -41,6 +41,8 @@ option('temporal_denoising', type: 'boolean', value: true, description: 'enable 
 option('vp9_temporal_denoising', type: 'boolean', value: false, description: 'enable vp9 temporal denoising')
 option('webm_io', type: 'boolean', value: false, description: 'enable input from and output to WebM container')
 option('libyuv', type: 'boolean', value: false, description: 'enable libyuv')
+option('vp8_encoder', type: 'boolean', value: true, description: 'Enable the VP8 encoder only')
 option('vp8_decoder', type: 'boolean', value: true, description: 'Enable the VP8 decoder only')
+option('vp9_encoder', type: 'boolean', value: true, description: 'Enable the VP9 encoder only')
 option('vp9_decoder', type: 'boolean', value: true, description: 'Enable the VP9 decoder only')
 #### --- END GENERATED EXTERN OPTIONS --- ####

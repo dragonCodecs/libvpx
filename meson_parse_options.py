@@ -12,7 +12,7 @@ def parse_options(lines: list[str]) -> dict:
     boolean_regexp = r'--(enable|disable)-([^\s]+)\s+(.+)'
     combo_regexp = r'^--([a-z0-9_\-]+)=\{?([A-Za-z]+\|[A-Za-z|]+)\}?\s+(.+)$'
     stock_regexp = r'^--([a-z0-9_\-]+)(?:=[A-Za-z]+)?\s+(.+)$'
-    codec_regexp = r'^([a-z0-9_\-]+):(\s+(encoder|decoder)){1,2}$'
+    codec_regexp = r'^([a-z0-9_\-]+):\s+(encoder|decoder)(?:\s+)?(encoder|decoder)?$'
 
     for line in lines:
         line = line.strip()
