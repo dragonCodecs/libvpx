@@ -313,6 +313,8 @@ force_enable_features = get_option('force_enable_features')
 # the parameter when the setting is not disabled.
 # soft_enable
 foreach feature: enable_features
+	# todo: test arch_ext_list, and then cmdline_select
+
 	if not features.has(feature) or feature.get(feature, true)
 		if not feature.get(feature, true)
 			message('\t enabling @0@'.format(feature))
@@ -382,7 +384,7 @@ if tgt_isa == 'arm'
 endif
 
 if tgt_os == 'windows' or tgt_os == 'cygwin'
-	tgt_os == 'windows'
+	tgt_os = 'windows'
 elif ['darwin', 'ios', 'tvos'].contains(tgt_os)
 	# The gcc -dumpmachine bit is used to force -mmacosx-version-min/max
 	warning('Apple target detected, please supply the --m(macos|ios)-version-* and -isysroot flags through -Dc_flags or a native file')
@@ -406,9 +408,9 @@ elif ['darwin', 'ios', 'tvos'].contains(tgt_os)
 		endif
 	endif
 elif tgt_os == 'linux' or tgt_os == 'android' or tgt_os.ends_with('bsd')
-	tgt_os == 'linux'
+	tgt_os = 'linux'
 elif tgt_os == 'sunos'
-	tgt_os == 'solaris'
+	tgt_os = 'solaris'
 endif
 
 #
