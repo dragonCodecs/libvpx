@@ -414,7 +414,14 @@ elif ['darwin', 'ios', 'tvos'].contains(tgt_os)
 			tgt_os = 'iphonesimulator'
 		endif
 	endif
+elif tgt_os == 'linux' or tgt_os == 'android' or tgt_os.ends_with('bsd')
+	tgt_os == 'linux'
+elif tgt_os == 'sunos'
+	tgt_os == 'solaris'
 endif
+
+# Mark the specific ISA requested as enabled
+features.set(tgt_os, true)
  
 # Enable the architecture family
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
@@ -437,7 +444,7 @@ elif tgt_isa == 'loongarch64'
 endif
 
 # Handle Solaris variants. Solaris 10 needs -lposix4
-if tgt_os == 'sunos'
+if tgt_os == 'solaris'
 	extra_libs += compiler.find_library('posix4', required: true)
 endif
 
@@ -770,7 +777,7 @@ elif tgt_isa.starts_with('x86')
 		if out.contains('Apple')
 			warn('Unsupported version of nasm: @0@'.format(runresult.stdout()))
 			features.set('as', false)
-		elif ['linux', 'sunos', 'android'].contains(tgt_os)
+		elif ['linux', 'solaris'].contains(tgt_os)
 			out = out.split()
 			if out[1].to_lower() == 'version'
 				if out[2].version_compare('<2.09')
@@ -806,7 +813,7 @@ elif tgt_isa.starts_with('x86')
 			# See https://www.nasm.us/doc/nasmdoc8.html#section-8.5.3
 			asm_args += ['-g', 'cv8']
 		endif
-	elif ['linux', 'sunos', 'android'].contains(tgt_os)
+	elif ['linux', 'solaris'].contains(tgt_os)
 		asm_args += ['-f', 'elf@0@'.format(x86_bits)]
 		if features.get('debug', false)
 			asm_args += ['-g']
@@ -1199,7 +1206,7 @@ endif
 ### process_detect ###
 
 if features.get('shared', false)
-	if not ['linux', 'sunos', 'darwin', 'iphonesimulator'].contains(tgt_os)
+	if not ['linux', 'solaris', 'darwin', 'iphonesimulator'].contains(tgt_os)
 		if not features.get('gnu', false)
 			# Again, no OS/2 because Meson itself doens't support it
 			error('Shared library build is only supported on ELF and Darwin for now')
