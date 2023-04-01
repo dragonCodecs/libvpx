@@ -372,7 +372,6 @@ tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
 
 if tgt_isa == 'arm'
-	features.set('armv7', true)
 	# The __SOFTFP__ macro is unreliable, clang defines it
 	# as __SOFT_FP__. The other one matches the configure script better.
 	if c.get_define('__ARM_PCS_VFP') != ''
@@ -380,14 +379,6 @@ if tgt_isa == 'arm'
 	else
 		float_abi = 'softfp'
 	endif
-elif tgt_isa.starts_with('sparc')
-	features.set('sparc', true)
-elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
-	features.set('ppc64le', true)
-elif tgt_isa == 'mips'
-	features.set('mips32', true)
-else
-	features.set(tgt_isa, true)
 endif
 
 if tgt_os == 'windows' or tgt_os == 'cygwin'
@@ -420,8 +411,32 @@ elif tgt_os == 'sunos'
 	tgt_os == 'solaris'
 endif
 
+#
+# Set up toolchain variables
+#
+
 # Mark the specific ISA requested as enabled
-features.set(tgt_os, true)
+if tgt_isa == 'arm'
+	features.set('armv7', true)
+elif tgt_isa.starts_with('sparc')
+	features.set('sparc', true)
+elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
+	features.set('ppc64le', true)
+elif tgt_isa == 'mips'
+	features.set('mips32', true)
+else
+	features.set(tgt_isa, true)
+endif
+if compiler.get_argument_syntax() == 'msvc'
+	tgt_cc == 'msvc'
+elif compiler.get_id() == 'icc'
+	tgt_cc == 'icc'
+elif ['gcc', 'clang'].contains(compiler.get_id())
+	tgt_cc == 'gcc'
+else
+	tgt_cc == 'gnu'
+endif
+features.set(tgt_cc, true)
  
 # Enable the architecture family
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
@@ -477,7 +492,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	asm_conversion_exe = ''
 	asm_conversion_cmd = []
 
-	if compiler.get_id() == 'gcc' or compiler.get_id() == 'clang'
+	if tgt_cc == 'gcc'
 		tune_cflags = '-mtune=@0@'
 
 		if tgt_isa == 'arm'
@@ -505,7 +520,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			gcc_flags = ['-mthumb', '-mimplicit-it=always']
 			asm_args += asm.get_supported_arguments(gcc_flags)
 		endif
-	elif compiler.get_argument_syntax() == 'msvc'
+	elif tgt_cc == 'msvc'
 		# A number of ARM-based Windows platforms are constrained by their
 		# respective SDKs' limitations. Fortunately, these are all 32-bit ABIs
 		# and so can be selected as 'win32'.
@@ -640,7 +655,7 @@ elif tgt_isa.starts_with('x86')
 	# Solaris is Meson handled, and OS/2 is unsupported by Meson.
 	endif 
 
-	if cpp.get_id() == 'icc'
+	if tgt_cc == 'icc'
 		gcc_flags = ['-use-msasm']
 		c_args += c.get_supported_arguments(gcc_flags)
 		cpp_args += cpp.get_supported_arguments(gcc_flags)
@@ -664,7 +679,7 @@ elif tgt_isa.starts_with('x86')
 				tune_cflags = '-march=@0@'
 			endif
 		endif
-	elif cpp.get_argument_syntax() != 'msvc'
+	elif tgt_cc != 'msvc'
 		tune_cflags = '-march='
 		# #for 32 bit x86 builds, -O3 did not turn on this flag
 		if get_option('optimization') >= '3' and not get_option('gprof')
