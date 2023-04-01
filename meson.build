@@ -371,9 +371,8 @@ endif
 tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
 
-# todo: implement feature enable for triplet
-
 if tgt_isa == 'arm'
+	features.set('armv7', true)
 	# The __SOFTFP__ macro is unreliable, clang defines it
 	# as __SOFT_FP__. The other one matches the configure script better.
 	if c.get_define('__ARM_PCS_VFP') != ''
@@ -381,6 +380,14 @@ if tgt_isa == 'arm'
 	else
 		float_abi = 'softfp'
 	endif
+elif tgt_isa.starts_with('sparc')
+	features.set('sparc', true)
+elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
+	features.set('ppc64le', true)
+elif tgt_isa == 'mips'
+	features.set('mips32', true)
+else
+	features.set(tgt_isa, true)
 endif
 
 if tgt_os == 'windows' or tgt_os == 'cygwin'
