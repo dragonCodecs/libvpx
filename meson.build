@@ -813,7 +813,6 @@ elif tgt_isa.starts_with('x86')
 	endif
 
 	if tgt_os == 'windows' and target_machine.cpu_family() == 'x86'
-		# TODO: validate this is OK, we are relying on Meson's language support
 		asm_args += ['-f', 'win32']
 		if features.get('debug', false)
 			# Unsure why Google forces CodeView 8 here... maybe Yasm?
@@ -821,7 +820,6 @@ elif tgt_isa.starts_with('x86')
 			asm_args += ['-g', 'cv8']
 		endif
 	elif tgt_os == 'windows' and target_machine.cpu_family() == 'x86_64'
-		# TODO: validate this is OK, we are relying on Meson's language support
 		asm_args += ['-f', 'win64']
 		if features.get('debug', false)
 			# Unsure why Google forces CodeView 8 here... maybe Yasm?
