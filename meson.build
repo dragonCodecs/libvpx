@@ -349,7 +349,7 @@ features.set('extra_warnings', get_option('warning_level') >= 2)
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
-features.set('as', add_languages('nasm'))
+features.set('as', 'auto')
 
 foreach flag: CMDLINE_SELECT
 	if IGNORE_MESON_BUILTINS.contains(flag)
@@ -415,10 +415,7 @@ endif
 
 c = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
-asm = disabler()
-if add_language('asm')
-	asm = meson.get_compiler('as')
-endif
+asm = meson.get_compiler('nasm')
 
 tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
@@ -843,7 +840,6 @@ elif tgt_isa.starts_with('x86')
 		out = runresult.stdout().strip()
 		if out.contains('Apple')
 			warn('Unsupported version of nasm: @0@'.format(runresult.stdout()))
-			features.set('as', false)
 		elif ['linux', 'solaris'].contains(tgt_os)
 			out = out.split()
 			if out[1].to_lower() == 'version'
@@ -854,13 +850,12 @@ elif tgt_isa.starts_with('x86')
 				error('unexpected nasm version string: @0@'.format(nasm_r.stdout()))
 			endif
 		endif
+		features.set('as', 'nasm')
 	elif yasm_exe.found()
-		as = 'yasm'
-		# TODO: is this feature even needed? We can test the exe variables
-		features.set('as', true)
+		features.set('as', 'yasm')
 	endif
 
-	if not features.get('as', false)
+	if features.get('as') == 'auto'
 		error('Neither yasm nor nasm have been found. See the prerequisites section in the README for more info.')
 	endif
 
