@@ -15,12 +15,9 @@ project(
 
 features = configuration_data()
 
-as = 'auto'
-
 c_args = []
 cpp_args = []
 asm_args = []
-tune_cpu = ''
 tune_cflags = ''
 rtcd_options = []
 link_args = []
@@ -77,10 +74,8 @@ endif
 features.set('install_bins', true)
 features.set('install_libs', true)
 
-# This feature is governed by Meson
-features.set('static', get_option('default_library') == 'static')
+features.set('static', true)
 features.set('optimizations', true)
-# This feature is governed by Meson
 features.set('dependency_tracking', true)
 features.set('spatial_resampling', true)
 features.set('multithread', true)
@@ -351,7 +346,8 @@ features.set('extra_warnings', not ['0', '1'].contains(get_option('warning_level
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
-features.set('as', 'auto')
+
+tune_cpu = ''
 
 foreach flag: CMDLINE_SELECT
 	if IGNORE_MESON_BUILTINS.contains(flag)
@@ -368,7 +364,7 @@ foreach flag: CMDLINE_SELECT
 		endif
 
 		size_limit_value = size_limit_value.split('x')
-		
+
 		if size_limit_value.length() != 2
 			error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
 		endif
@@ -403,8 +399,8 @@ if enable_features.contains('help') or disable_features.contains('help') or forc
 		Experiments: @0@
 		Codecs:
 		Codec families:
-		Architectures: 
-		Toggles: 
+		Architectures:
+		Toggles:
 	'''.format(EXPERIMENT_LIST, CODECS, CODEC_FAMILIES, ARCH_EXT_LIST, CMDLINE_SELECT))
 endif
 
@@ -555,7 +551,7 @@ else
 	tgt_cc == 'gnu'
 endif
 features.set(tgt_cc, true)
- 
+
 # Enable the architecture family
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	features.set('arm', true)
@@ -624,7 +620,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 		asm_conversion_exe = find_program('build/make/ads2gas.pl', required: true)
 		asm_conversion_cmd = [asm_conversion_exe]
-		
+
 		if tgt_os == 'windows'
 			asm_conversion_cmd += ['-noelf']
 			features.set('thumb', true)
@@ -771,7 +767,9 @@ elif tgt_isa.startswith('x86')
 			cpp_args += cpp.get_supported_arguments(gcc_flags)
 		endif
 	# Solaris is Meson handled, and OS/2 is unsupported by Meson.
-	endif 
+	endif
+
+	as = 'auto'
 
 	if tgt_cc == 'icc'
 		gcc_flags = ['-use-msasm']
@@ -905,10 +903,11 @@ elif tgt_isa.startswith('x86')
 	if nasm_exe.found()
 		# Apple ships version 0.98 of nasm through at least Xcode 6. Revisit
 		# this check if they start shipping a compatible version.
-		runresult = run_command(nasm_exe, '-v', capture: true, check: false)
-		out = runresult.stdout().strip()
+		out = run_command(nasm_exe, '-v', capture: true, check: true).stdout().strip()
+		as = 'nasm'
 		if out.contains('Apple')
-			warning('Unsupported version of nasm: @0@'.format(runresult.stdout()))
+			warning('Unsupported version of nasm: @0@'.format(out)
+			as = 'auto'
 		elif ['linux', 'solaris'].contains(tgt_os)
 			out = out.split()
 			if out[1].to_lower() == 'version'
@@ -916,15 +915,14 @@ elif tgt_isa.startswith('x86')
 					error('nasm @0@ does not support section alignment'.format(out[2]))
 				endif
 			else
-				error('unexpected nasm version string: @0@'.format(nasm_r.stdout()))
+				error('unexpected nasm version string: @0@'.format(out))
 			endif
 		endif
-		features.set('as', 'nasm')
 	elif yasm_exe.found()
-		features.set('as', 'yasm')
+		as = 'yasm'
 	endif
 
-	if features.get('as') == 'auto'
+	if as == 'auto'
 		error('Neither yasm nor nasm have been found. See the prerequisites section in the README for more info.')
 	endif
 
@@ -1334,18 +1332,14 @@ endif
 
 ### process_detect ###
 
-if features.get('shared', false)
-	if not ['linux', 'solaris', 'darwin', 'iphonesimulator'].contains(tgt_os)
-		if not features.get('gnu', false)
-			# Again, no OS/2 because Meson itself doens't support it
-			error('Shared library build is only supported on ELF and Darwin for now')
-		endif
-	endif
+if features.get('shared', false) and not ['linux', 'solaris', 'darwin', 'iphonesimulator'].contains(tgt_os) and not features.get('gnu', false)
+	# Again, no OS/2 because Meson itself doens't support it
+	error('Shared library build is only supported on ELF and Darwin for now')
 endif
 
 features.set('unistd_h', c.has_header('unistd.h'))
-features.set('vpx_vpx_integer_h', c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.')))
-if features.get('unistd_h', false)
+if c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.')))
+	features.set('vpx_vpx_integer_h', true)
 	features.set('vpx_ports', true)
 endif
 
