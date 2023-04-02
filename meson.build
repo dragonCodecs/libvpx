@@ -43,13 +43,13 @@ all_targets = [
 # all targets available are enabled, by default.
 foreach t : all_targets
 	features.set(t, true)
-endif
+endforeach
 
 # we don't use diff in Meson.
 
 perl_exe = find_program('perl', required: true)
 
-doxygen_exe = find_program('doxygen', required: true)
+doxygen_exe = find_program('doxygen', required: false)
 
 if doxygen_exe.found()
 	doxygen_version = run_command(
@@ -193,7 +193,7 @@ CONFIG_LIST = [
 	'unit_tests',
 	'webm_io',
 	'libyuv',
-	'decode_perf_tests',,
+	'decode_perf_tests',
 	'encode_perf_tests',
 	'multi_res_encoding',
 	'temporal_denoising',
@@ -245,7 +245,7 @@ CMDLINE_SELECT = [
 	'vp9_postproc',
 	'multithread',
 	'internal_stats',
-] + CODECS + CODECS_FAMILIES + [
+] + CODECS + CODEC_FAMILIES + [
 	'static_msvcrt',
 	'spatial_resampling',
 	'realtime_only',
@@ -346,7 +346,7 @@ VAR_LIST = []
 
 ## process_cmdline ##
 
-features.set('extra_warnings', get_option('warning_level') >= 2)
+features.set('extra_warnings', not ['0', '1'].contains(get_option('warning_level')))
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
@@ -391,11 +391,11 @@ force_enable_features = get_option('force_enable_features')
 foreach feature: force_disable_features
 	message('\t forcibly disabling @0@'.format(feature))
 	features.set(feature, false)
-endif
+endforeach
 foreach feature: force_enable_features
 	message('\t forcibly enabling @0@'.format(feature))
 	features.set(feature, true)
-endif
+endforeach
 
 ## post_process_common_cmdline ##
 
@@ -505,7 +505,7 @@ elif tgt_isa == 'loongarch64'
 			endif
 			features.set(feature, true)
 		endif
-	endif
+	endforeach
 endif
 
 # Handle Solaris variants. Solaris 10 needs -lposix4
@@ -647,7 +647,7 @@ elif tgt_isa.starts_with('mips')
 					else
 						features.set(feature, false)
 					endif
-				endif
+				endforeach
 			else
 				features.set('mmi', true)
 			endif
@@ -771,13 +771,13 @@ elif tgt_isa.starts_with('x86')
 	disable_exts = false
 	foreach ext : ARCH_EXT_LIST_X86
 		# disable higher order extensions to simplify asm dependencies
-		if disable_exts then
+		if disable_exts
 			if features.get(ext, false)
 				rtcd_options += ['--disable-@0@'.format(ext)]
 				message('\t disabling @0@'.format(ext))
 				features.set(ext, false)
 			endif
-		elif not features.get(ext, false) then
+		elif not features.get(ext, false)
 			disable_exts = true
 		else
 			if ext == 'avx512'
@@ -794,7 +794,7 @@ elif tgt_isa.starts_with('x86')
 							features.set(feature, true)
 						endif
 					endif
-				endif
+				endforeach
 				if not c.compiles('''
 					#include <immintrin.h>
 					void f(void) {
@@ -827,7 +827,7 @@ elif tgt_isa.starts_with('x86')
 							features.set(feature, true)
 						endif
 					endif
-				endif
+				endforeach
 			endif
 		endif
 	endforeach
@@ -928,7 +928,7 @@ elif tgt_isa == 'loongarch64'
 			features.set(feature, true)
 		endif
 	endif
-elif tgt_cc == 'gnu' || tgt_cc == 'gcc'
+elif ['gnu', 'gcc'].contains(tgt_cc)
 	features.set('gcc', true)
 endif
 
@@ -944,7 +944,7 @@ endif
 
 # gcov is Meson handled
 
-if features.get('gprof' false)
+if features.get('gprof', false)
 	gcc_flags = ['-pg']
 
 	c_args += c.get_supported_arguments(gcc_flags)
@@ -1277,7 +1277,7 @@ if features.get('shared', false)
 endif
 
 features.set('unistd_h', c.has_header('unistd.h'))
-features.set('unistd_h', c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.'))
+features.set('vpx_vpx_integer_h', c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.')))
 if features.get('unistd_h', false)
 	features.set('vpx_ports', true)
 endif
@@ -1294,19 +1294,19 @@ cfgdata.set('INLINE', features.get('INLINE', ''))
 
 foreach arch : ARCH_LIST
 	cfgdata.set10('VPX_ARCH_@0@'.format(arch.to_upper()), features.get(arch, false))
-endif
+endforeach
 
 foreach have : HAVE_LIST
 	cfgdata.set10('HAVE_@0@'.format(have.to_upper()), features.get(have, false))
-endif
+endforeach
 
 foreach feature : CONFIG_LIST
 	cfgdata.set10('CONFIG_@0@'.format(feature.to_upper()), features.get(feature, false))
-endif
+endforeach
 
 foreach var : VAR_LIST
 	cfgdata.set10(var.to_upper(), features.get(var, false))
-endif
+endforeach
 
 version_string = meson.project_version()
 version = meson.project_version().split('.')
