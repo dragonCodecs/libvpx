@@ -533,19 +533,36 @@ endif
 #
 
 # Mark the specific ISA requested as enabled
+if tgt_isa == 'aarch64'
+	tgt_isa = 'arm64'
 if tgt_isa == 'arm'
-	features.set('armv7', true)
+	arm_arch = c.get_define('__ARM_ARCH')
+	_M_ARM 
+	if arm_arch == ''
+		arm_arch = c.get_define('_M_ARM')
+	endif
+	if arm_arch == ''
+		warning('Unknown 32-bit Arm architecture version, assuming v7-a')
+		arm_arch = '7'
+	endif
+	tgt_isa = 'armv@0@'.format(arm_arch)
 elif tgt_isa.startswith('sparc')
-	features.set('sparc', true)
+	tgt_isa = 'sparc'
 elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
-	features.set('ppc64le', true)
+	tgt_isa = 'ppc64le'
 elif tgt_isa == 'mips'
-	features.set('mips32', true)
-else
+	tgt_isa = 'mips32'
+elif not tgt_isa.starts_with('x86')
+	tgt_isa = 'generic'
+endif
+if features.get(tgt_isa, true) # soft_enabled
+	if not features.has(tgt_isa)
+		message('\tenabling@0@'.format(tgt_isa))
+	endif
 	features.set(tgt_isa, true)
 endif
 if c.get_argument_syntax() == 'msvc'
-	tgt_cc == 'msvs'
+	tgt_cc == 'msvs' # Upstream uses "vs@0@".format(vs_major_version_number)
 elif c.get_id() == 'icc'
 	tgt_cc == 'icc'
 elif ['gcc', 'clang'].contains(c.get_id())
@@ -556,7 +573,7 @@ endif
 features.set(tgt_cc, true)
 
 # Enable the architecture family
-if tgt_isa == 'arm' or tgt_isa == 'aarch64'
+if tgt_isa.startswith('arm')
 	features.set('arm', true)
 elif tgt_isa.startswith('mips')
 	features.set('mips', true)
@@ -612,7 +629,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	if tgt_cc == 'gcc'
 		tune_cflags = '-mtune=@0@'
 
-		if tgt_isa == 'arm'
+		if tgt_isa == 'armv7'
 			if features.get('neon', false) or features.get('neon_asm', false)
 				gcc_flags = ['-mfpu=neon']
 				c_args += c.get_supported_arguments(gcc_flags) #-ftree-vectorize
@@ -642,7 +659,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		# respective SDKs' limitations. Fortunately, these are all 32-bit ABIs
 		# and so can be selected as 'win32'.
 
-		if tgt_isa == 'arm'
+		if tgt_isa == 'armv7'
 			asm_conversion_exe = find_program('build/make/ads2armasm_ms.pl', required: true)
 			asm_conversion_cmd = [asm_conversion_exe]
 			features.set('multithread', false)
@@ -658,7 +675,12 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			# Because the ARM64 Windows SDK's arm_neon.h is ARM32-specific
 			# while LLVM's is not, probe its validity.
 			if features.get('neon', false)
-				if not c.has_header('arm_neon.h')
+				if not c.compiles('''
+						#include <arm_neon.h>
+						int z;
+					''',
+					name: 'has a valid arm_neon.h file for the architecture'
+				)
 					features.set('win_arm64_neon_h_workaround', c.has_header('arm64_neon.h'))
 				endif
 			endif
@@ -758,7 +780,9 @@ elif tgt_isa.startswith('mips')
 	# KPIC is a flag that is valid only for SunCC.
 	# As such, we'll use the Meson derived version.
 elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
-	if features.get('vsx', false)
+	# Do not enable vsx by default.
+	# https://bugs.chromium.org/p/webm/issues/detail?id=1522
+	if not features.get('vsx', false)
 		rtcd_options += ['--disable-vsx']
 	endif
 
@@ -809,15 +833,15 @@ elif tgt_isa.startswith('x86')
 				tune_cflags = '-march=@0@'
 			endif
 		endif
-	elif tgt_cc != 'msvs'
+	elif tgt_cc == 'gcc'
 		tune_cflags = '-march='
 		# #for 32 bit x86 builds, -O3 did not turn on this flag
-		if get_option('optimization') >= '3' and not get_option('gprof')
+		if features.get('optimizations', false) and not features.get('gprof', false)
 			gcc_flags = ['-fomit-frame-pointer']
 			c_args += c.get_supported_arguments(gcc_flags)
 			cpp_args += cpp.get_supported_arguments(gcc_flags)
 		endif
-	else
+	elif tgt_cc == 'msvs'
 		# Based on the Gerrit review, it seems the author intended to ban
 		# VS 2017 and earlier.
 		# See https://chromium-review.googlesource.com/c/webm/libvpx/+/751863
