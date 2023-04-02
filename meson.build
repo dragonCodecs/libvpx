@@ -356,7 +356,9 @@ foreach flag: CMDLINE_SELECT
 		continue
 	elif MESON_OPTIONS.contains(flag)
 		value = get_option(flag)
-		features.set(flag, value)
+		if value != 'unset'
+			features.set(flag, value)
+		endif
 	elif flag == 'size_limit'
 		size_limit_value = get_option('size_limit', '').split('x')
 		if size_limit_value.length() != 2
@@ -382,8 +384,8 @@ foreach flag: CMDLINE_SELECT
 	endif
 endif
 
-force_disable_features = get_option('force_disable_features').split(',')
-force_enable_features = get_option('force_enable_features').split(',')
+force_disable_features = get_option('force_disable_features')
+force_enable_features = get_option('force_enable_features')
 
 foreach feature: force_disable_features
 	message('\t forcibly disabling @0@'.format(feature))

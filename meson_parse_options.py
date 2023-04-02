@@ -19,7 +19,7 @@ def parse_options(lines: list[str]) -> dict:
         if option:
             current_options[option.group(2).lower().replace('-', '_')] = {
                 'type': 'boolean',
-                'value': 'true' if option.group(1) != 'enable' else 'false',
+                'value': 'true' if option.group(1) == 'disable' else 'unset',
                 'description': option.group(3).strip()
             }
             continue
@@ -109,9 +109,17 @@ def update_meson_options(options: dict):
                         choices = ', '.join([f"'{i}'" for i in kv['choices']])
                         lines.append(f"option('{key}', type: 'combo', choices: [{choices}], description: '{kv['description']}')\n")
                     elif kv['type'] == 'boolean':
-                        lines.append(f"option('{key}', type: 'boolean', value: {kv['value']}, description: '{kv['description']}')\n")
+                        if kv['value'] != 'unset':
+                            value = f"value: '{kv['value']}', "
+                        else:
+                            value = ''
+                        lines.append(f"option('{key}', type: 'combo', choices: ['unset', 'true', 'false'], {value}description: '{kv['description']}')\n")
                     else:
-                        lines.append(f"option('{key}', type: 'string', {"value: '{kv['value']}', " if kv['value']}, description: '{kv['description']}')\n")
+                        if kv.get('value') and len(kv['value']) != 0:
+                            value = f"value: '{kv['value']}', " 
+                        else:
+                            value = ''
+                        lines.append(f"option('{key}', type: 'string', {value}description: '{kv['description']}')\n")
             elif l == closing:
                 lines.append(l)
                 has_generated = False
@@ -137,7 +145,7 @@ def update_meson_build(options: dict):
                     lines.append(f"\t'{i}',\n")
                 lines.append(']\n')
                 lines.append('\n')
-                lines.append('MESON_BOOLEAN_OPTIONS = [\n')
+                lines.append('MESON_OPTIONS = [\n')
                 for i in booleans:
                     lines.append(f"\t'{i}',\n")
                 lines.append(']\n')
