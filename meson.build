@@ -535,7 +535,7 @@ endif
 # Mark the specific ISA requested as enabled
 if tgt_isa == 'aarch64'
 	tgt_isa = 'arm64'
-if tgt_isa == 'arm'
+elif tgt_isa == 'arm'
 	arm_arch = c.get_define('__ARM_ARCH')
 	_M_ARM 
 	if arm_arch == ''
@@ -552,12 +552,12 @@ elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 	tgt_isa = 'ppc64le'
 elif tgt_isa == 'mips'
 	tgt_isa = 'mips32'
-elif not tgt_isa.starts_with('x86')
+elif not tgt_isa.startswith('x86')
 	tgt_isa = 'generic'
 endif
 if features.get(tgt_isa, true) # soft_enabled
 	if not features.has(tgt_isa)
-		message('\tenabling@0@'.format(tgt_isa))
+		message('\tenabling @0@'.format(tgt_isa))
 	endif
 	features.set(tgt_isa, true)
 endif
@@ -906,7 +906,7 @@ elif tgt_isa.startswith('x86')
 	feature = 'runtime_cpu_detect'
 	if features.get(tgt_isa, true) # soft_enabled
 		if not features.has(tgt_isa)
-			message('\tenabling@0@'.format(tgt_isa))
+			message('\tenabling @0@'.format(tgt_isa))
 		endif
 		features.set(tgt_isa, true)
 	endif
@@ -932,7 +932,7 @@ elif tgt_isa.startswith('x86')
 					else
 						if features.get(feature, true) # soft_enabled
 							if not features.has(feature)
-								message('\tenabling@0@'.format(feature))
+								message('\tenabling @0@'.format(feature))
 							endif
 							features.set(feature, true)
 						endif
@@ -964,7 +964,7 @@ elif tgt_isa.startswith('x86')
 					else
 						if features.get(feature, true) # soft_enabled
 							if not features.has(feature)
-								message('\tenabling@0@'.format(feature))
+								message('\tenabling @0@'.format(feature))
 							endif
 							features.set(feature, true)
 						endif
@@ -982,7 +982,7 @@ elif tgt_isa.startswith('x86')
 		out = run_command(nasm_exe, '-v', capture: true, check: true).stdout().strip()
 		as = 'nasm'
 		if out.contains('Apple')
-			warning('Unsupported version of nasm: @0@'.format(out)
+			warning('Unsupported version of nasm: @0@'.format(out))
 			as = 'auto'
 		elif ['linux', 'solaris'].contains(tgt_os)
 			out = out.split()
@@ -1050,7 +1050,7 @@ elif tgt_isa.startswith('loongarch')
 		feature = 'runtime_cpu_detect'
 		if features.get(feature, true) # soft_enabled
 			if not features.has(feature)
-				message('\tenabling@0@'.format(feature))
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
@@ -1062,7 +1062,7 @@ elif tgt_isa.startswith('loongarch')
 		feature = 'runtime_cpu_detect'
 		if features.get(feature, true) # soft_enabled
 			if not features.has(feature)
-				message('\tenabling@0@'.format(feature))
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
@@ -1337,6 +1337,7 @@ elif target_machine.system() == 'windows'
 	endif
 	if cpp.compiles('int z;')
 		enable_features += ['libyuv']
+	endif
 	foreach feature: enable_features
 		if features.get(feature, true)
 			if not features.has(feature)
@@ -1375,7 +1376,7 @@ if features.get('shared', false) and not ['linux', 'solaris', 'darwin', 'iphones
 endif
 
 features.set('unistd_h', c.has_header('unistd.h'))
-if c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.')))
+if c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.'))
 	features.set('vpx_vpx_integer_h', true)
 	features.set('vpx_ports', true)
 endif
