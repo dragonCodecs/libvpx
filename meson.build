@@ -738,6 +738,15 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 elif tgt_isa.startswith('mips')
 	tune_cflags = '-mtune=@0@'
 
+	if features.get('dspr2', false)
+		c_flags += c.get_supported_arguments('-mips2r32', '-mdspr2')
+		cpp_flags += cpp.get_supported_arguments('-mips2r32', '-mdspr2')
+	endif
+
+	if features.get('runtime_cpu_detect', false)
+		features.set('runtime_cpu_detect', false)
+	endif
+
 	if tune_cpu != ''
 		if tune_cpu == 'p5600'
 			gcc_flags = ['-mips32r5', '-mload-store-pairs', '-msched-weight', '-mhard-float', '-mfp64']
