@@ -1082,12 +1082,11 @@ if tgt_isa == 'loongarch64'
 	endif
 endif
 
-if features.get('linux', true)
-	c_args += gcc_flags
-	cpp_args += gcc_flags
+# glibc needs these
+if features.get('linux', false)
+	warning('Enable transparent large-file-support; let me know if this breaks something, especially on Android!')
+	c_flags += ['-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64']
 endif
-
-features.set('extra_warnings', get_option('warning_level') >= 2)
 
 if features.get('gcc', false)
 	gcc_flags = [
