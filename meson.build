@@ -362,22 +362,28 @@ foreach flag: CMDLINE_SELECT
 			features.set(flag, value == 'true')
 		endif
 	elif flag == 'size_limit'
-		size_limit_value = get_option('size_limit', '').split('x')
+		size_limit_value = get_option('size_limit')
+		if size_limit_value == ''
+			continue
+		endif
+
+		size_limit_value = size_limit_value.split('x')
+		
 		if size_limit_value.length() != 2
 			error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
+		endif
+
+		w = size_limit_value[0].to_int()
+		h = size_limit_value[1].to_int()
+		if w <= 0 or h <= 0
+			error('Invalid size-limit: too small.')
+		elif w >= 65536 or h >= 65536
+			error('Invalid size-limit: too big.')
 		else
-			w = size_limit_value[0].to_int()
-			h = size_limit_value[1].to_int()
-			if w <= 0 or h <= 0
-				error('Invalid size-limit: too small.')
-			elif w >= 65536 or h >= 65536
-				error('Invalid size-limit: too big.')
-			else
-				var_list += ['DECODE_WIDTH_LIMIT', 'DECODE_HEIGHT_LIMIT']
-				features.set('DECODE_WIDTH_LIMIT', w)
-				features.set('DECODE_HEIGHT_LIMIT', h)
-				features.set('size_limit', true)
-			endif
+			var_list += ['DECODE_WIDTH_LIMIT', 'DECODE_HEIGHT_LIMIT']
+			features.set('DECODE_WIDTH_LIMIT', w)
+			features.set('DECODE_HEIGHT_LIMIT', h)
+			features.set('size_limit', true)
 		endif
 	elif flag == 'cpu'
 		tune_cpu = get_option(flag)
