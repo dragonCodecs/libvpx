@@ -465,13 +465,16 @@ endforeach
 ## post_process_cmdline ##
 
 if features.get('coefficient_range_checking', false)
-	message('coefficient-range-checking is for decoders only, disabling encoders')
-	if not features.has('vp8_encoder') or not feature.get('vp8_encoder', false)
-		features.set('vp8_encoder', false)
-	endif
-	if not features.has('vp9_encoder') or not feature.get('vp9_encoder', false)
-		features.set('vp9_encoder', false)
-	endif
+	warn('coefficient-range-checking is for decoders only, disabling encoders')
+	encoders_features = ['vp8_encoder', 'vp9_encoder']
+	foreach feature: encoders_features # soft_disable
+		if not feature.get(feature, false) # ! enabled
+			if not features.has(feature) # disabled
+				message('\t disabling @0@'.format())
+			endif
+			features.set(feature, false)
+		endif
+	endforeach
 endif
 
 ### process_toolchain ###
