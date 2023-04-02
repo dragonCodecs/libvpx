@@ -36,25 +36,25 @@ def parse_options(lines: list[str]) -> dict:
             feature = option.group(2).strip()
             current_options[f'{option.group(1)}_{feature}'.lower().replace('-', '_')] = {
                 'type': 'boolean',
-                'value': 'true',
+                'value': 'true' if option.group(1) == 'disable' else 'unset',
                 'description': f'Enable the {option.group(1).upper()} {feature} only'
             }
             if option.group(3):
                 additional_feature = option.group(3).strip()
                 current_options[f'{option.group(1)}_{additional_feature}'.lower().replace('-', '_')] = {
                     'type': 'boolean',
-                    'value': 'true',
+                    'value': 'true' if option.group(1) == 'disable' else 'unset',
                     'description': f'Enable the {option.group(1).upper()} {additional_feature} only'
                 }
                 current_options[f'{option.group(1)}'.lower().replace('-', '_')] = {
                     'type': 'boolean',
-                    'value': 'true',
+                    'value': 'true' if option.group(1) == 'disable' else 'unset',
                     'description': f'Enable the {option.group(1).upper()} codec'
                 }
             else:
                 current_options[f'{option.group(1)}'.lower().replace('-', '_')] = {
                     'type': 'boolean',
-                    'value': 'true',
+                    'value': 'true' if option.group(1) == 'disable' else 'unset',
                     'description': f'Enable the {option.group(1).upper()} {feature}'
                 }
             continue

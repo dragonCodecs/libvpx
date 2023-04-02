@@ -477,6 +477,30 @@ if features.get('coefficient_range_checking', false)
 	endforeach
 endif
 
+# Enable all detected codecs, if they haven't been disabled
+foreach feature: CODECS
+	if features.get(feature, true) # soft_enabled
+		if not features.has(feature)
+			message('\tenabling @0@'.format(feature))
+		endif
+		features.set(feature, true)
+	endif
+endforeach
+
+# Enable the codec family if any component of that family is enabled
+foreach feature: CODECS
+	if features.get(feature, true)
+		features.set(feature.split('_')[0], true)
+	endif
+endforeach
+
+# Set the {en,de}coders variable if any algorithm in that class is enabled
+foreach feature: CODECS
+	if features.get(feature, true)
+		features.set('@0@s'.format(feature.split('_')[1]), true)
+	endif
+endforeach
+
 ### process_toolchain ###
 #### process_common_toolchain ####
 
