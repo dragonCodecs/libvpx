@@ -65,7 +65,7 @@ def parse_options(lines: list[str]) -> dict:
                 'description': option.group(2)
             }
         elif line.startswith('--') and not re.match(r'.+\<[a-z]+\>.*', line):
-            warn(f"Unhandled option: {line}, check that you fixed the spacing in the configure scripts!", FutureWarning)
+            warn(f"Unhandled option: {line}, did you apply meson/patch-configure.diff?", FutureWarning)
 
     return current_options
 
