@@ -1342,11 +1342,18 @@ endif
 ## END APPLICATION SPECIFIC CONFIGURATION
 ##
 
+if meson.version().version_compare('>= 1.1.0')
+	configure_args = meson.build_options()
+else
+	extractor = find_program('meson/capture_build_options.py', required: true)
+	configure_args = run_command(extractor, check: true)
+endif
+
 vpx_config_c = configure_file(
 	input: 'meson/vpx_config.c',
 	output: 'vpx_config.c',
 	configuration: {
-		'CONFIGURE_ARGS': '"Built with Meson @0@"'.format(meson.version())
+		'CONFIGURE_ARGS': configure_args
 	}
 )
 
