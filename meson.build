@@ -6,7 +6,8 @@ project(
 		# Enforce c89 for c files. Don't be too strict about it though. Allow
 		# gnu extensions like "//" for comments.
 		'c_std=gnu89',
-		'cpp_std=gnu++11',
+		# Uncomment when Meson can handle this one for MSVC.
+		# 'cpp_std=gnu++11',
 		'warning_level=2',
 		'b_bitcode=true',
 	]
@@ -1165,7 +1166,8 @@ if tgt_cc == 'msvs'
 		features.set(feature, true)
 	endif
 elif tgt_os == 'android'
-	if c.get_supported_arguments('-std=gnu++11')
+	if cpp.get_supported_arguments('-std=gnu++11')
+		cpp_args += ['-std=gnu++11']
 		feature = 'webm_io'
 		if not features.has(feature) or feature.get(feature, true)
 			if not feature.get(feature, true)
@@ -1187,7 +1189,8 @@ elif tgt_os == 'darwin'
 	# iOS/ARM builds do not work with gtest. This does not match
 	# x86 targets.
 elif target_machine.system() == 'iphonesimulator'
-	if c.get_supported_arguments('-std=gnu++11')
+	if cpp.get_supported_arguments('-std=gnu++11')
+		cpp_args += ['-std=gnu++11']
 		feature = 'webm_io'
 		if not features.has(feature) or feature.get(feature, true)
 			if not feature.get(feature, true)
@@ -1207,7 +1210,8 @@ elif target_machine.system() == 'windows'
 	# Some mingw toolchains don't have pthread available by default.
 	# Treat these more like visual studio where threading in gtest
 	# would be disabled for the same reason.
-	if c.get_supported_arguments('-std=gnu++11')
+	if cpp.get_supported_arguments('-std=gnu++11')
+		cpp_args += ['-std=gnu++11']
 		feature = 'unit_tests'
 		if not features.has(feature) or feature.get(feature, true)
 			if not feature.get(feature, true)
@@ -1233,7 +1237,8 @@ elif target_machine.system() == 'windows'
 		endif
 	endif
 else
-	if features.get('pthread_h', false)
+	if features.get('pthread_h', false) and cpp.get_supported_arguments('-std=gnu++11')
+		cpp_args += ['-std=gnu++11']
 		feature = 'unit_tests'
 		if not features.has(feature) or feature.get(feature, true)
 			if not feature.get(feature, true)
