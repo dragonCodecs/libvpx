@@ -1212,6 +1212,7 @@ if features.get('gcc', false)
 	libyuv_cpp_args += cpp.get_supported_arguments(
 		'-Wno-missing-declarations',
 		'-Wno-missing-prototypes',
+		'-Wno-pass-failed',
 		'-Wno-unused-parameter',
 	)
 endif
@@ -1260,6 +1261,9 @@ endif
 # "Enable" the postbuild target if building for visual studio.
 # The only relevant bits for Meson is the __inline definition.
 if tgt_cc == 'msvs'
+	if get_option('backend').startswith('vs')
+		features.set('solution', true)
+	endif
 	features.set('INLINE', '__inline')
 endif
 
