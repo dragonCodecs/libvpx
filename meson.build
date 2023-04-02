@@ -345,63 +345,45 @@ VAR_LIST = []
 
 ## process_cmdline ##
 
-# process_cmdline #
-
 features.set('extra_warnings', get_option('warning_level') >= 2)
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
 features.set('as', add_languages('nasm'))
-size_limit_value = get_option('size_limit', '').split('x')
-if size_limit_value.length() != 2
-	error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
-else
-	w = size_limit_value[0].to_int()
-	h = size_limit_value[1].to_int()
-	if w <= 0 or h <= 0
-		error('Invalid size-limit: too small.')
-	elif w >= 65536 or h >= 65536
-		error('Invalid size-limit: too big.')
-	else
-		var_list += ['DECODE_WIDTH_LIMIT', 'DECODE_HEIGHT_LIMIT']
-		features.set('DECODE_WIDTH_LIMIT', w)
-		features.set('DECODE_HEIGHT_LIMIT', h)
-		features.set('size_limit', true)
-	endif
-endif
-tune_cpu = get_option('tune_cpu', '')
 
-enable_features = get_option('enable_features')
-disable_features = get_option('disable_features')
-force_disable_features = get_option('force_disable_features')
-force_enable_features = get_option('force_enable_features')
-
-# Iterates through positional parameters, checks to confirm the parameter has
-# not been explicitly (force) disabled, and enables the setting controlled by
-# the parameter when the setting is not disabled.
-# soft_enable
-foreach feature: enable_features
-	# todo: test arch_ext_list, and then cmdline_select
-
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
+foreach flag: CMDLINE_SELECT
+	if IGNORE_MESON_BUILTINS.contains(flag)
+		continue
+	elif MESON_OPTIONS.contains(flag)
+		value = get_option(flag)
+		features.set(flag, value)
+	elif flag == 'size_limit'
+		size_limit_value = get_option('size_limit', '').split('x')
+		if size_limit_value.length() != 2
+			error('Invalid size-limit: must be of the form WIDTHxHEIGHT')
+		else
+			w = size_limit_value[0].to_int()
+			h = size_limit_value[1].to_int()
+			if w <= 0 or h <= 0
+				error('Invalid size-limit: too small.')
+			elif w >= 65536 or h >= 65536
+				error('Invalid size-limit: too big.')
+			else
+				var_list += ['DECODE_WIDTH_LIMIT', 'DECODE_HEIGHT_LIMIT']
+				features.set('DECODE_WIDTH_LIMIT', w)
+				features.set('DECODE_HEIGHT_LIMIT', h)
+				features.set('size_limit', true)
+			endif
 		endif
-		features.set(feature, true)
+	elif flag == 'cpu'
+		tune_cpu = get_option(flag)
+	elif
+		error('Unhandled option @0@'.format(flag))
 	endif
 endif
 
-# Iterates through positional parameters, checks to confirm the parameter has
-# not been explicitly (force) enabled, and disables the setting controlled by
-# the parameter when the setting is not enabled.
-foreach feature: disable_features
-	if not features.has(feature) or not feature.get(feature, false)
-		if not feature.get(feature, false)
-			message('\t disabling @0@'.format(feature))
-		endif
-		features.set(feature, false)
-	endif
-endif
+force_disable_features = get_option('force_disable_features').split(',')
+force_enable_features = get_option('force_enable_features').split(',')
 
 foreach feature: force_disable_features
 	message('\t forcibly disabling @0@'.format(feature))
@@ -1152,19 +1134,16 @@ endif
 # Other toolchain specific defaults
 if target_machine.cpu_family() == 'x86' or target_machine.cpu_family() == 'x86_64'
 	feature = 'postproc'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
+	if feature.get(feature, true)
+		if not features.has(feature)
 			message('\t enabling @0@'.format(feature))
 		endif
 		features.set(feature, true)
 	endif
 endif
 
-if features.get('postproc_visualizer', false)
-	# TODO: read list of features and make them flags
-	if not features.get('postproc', false)
-		error('postproc_visualizer requires postproc to be enabled')
-	endif
+if features.get('postproc_visualizer', false) and not features.get('postproc', false)
+	error('postproc_visualizer requires postproc to be enabled')
 endif
 
 # Enable unit tests by default if we have a working C++ compiler.
