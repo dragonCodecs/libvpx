@@ -477,7 +477,7 @@ else
 	features.set(tgt_isa, true)
 endif
 if compiler.get_argument_syntax() == 'msvc'
-	tgt_cc == 'msvc'
+	tgt_cc == 'msvs'
 elif compiler.get_id() == 'icc'
 	tgt_cc == 'icc'
 elif ['gcc', 'clang'].contains(compiler.get_id())
@@ -569,7 +569,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			gcc_flags = ['-mthumb', '-mimplicit-it=always']
 			asm_args += asm.get_supported_arguments(gcc_flags)
 		endif
-	elif tgt_cc == 'msvc'
+	elif tgt_cc == 'msvs'
 		# A number of ARM-based Windows platforms are constrained by their
 		# respective SDKs' limitations. Fortunately, these are all 32-bit ABIs
 		# and so can be selected as 'win32'.
@@ -728,7 +728,7 @@ elif tgt_isa.starts_with('x86')
 				tune_cflags = '-march=@0@'
 			endif
 		endif
-	elif tgt_cc != 'msvc'
+	elif tgt_cc != 'msvs'
 		tune_cflags = '-march='
 		# #for 32 bit x86 builds, -O3 did not turn on this flag
 		if get_option('optimization') >= '3' and not get_option('gprof')
@@ -927,7 +927,7 @@ elif tgt_isa == 'loongarch64'
 			features.set(feature, true)
 		endif
 	endif
-elif compiler.get_argument_syntax() != 'msvc'
+elif tgt_cc == 'gnu' || tgt_cc == 'gcc'
 	features.set('gcc', true)
 endif
 
@@ -1049,7 +1049,7 @@ if features.get('gcc', false)
 	c_args += c.get_supported_arguments('-Wundef')
 	c_args += c.get_supported_arguments('-Wframe-larger-than=52000')
 
-	if (features.get('mips') or inline != '') and features.get('extra_warnings', false)
+	if (features.get('mips') or features.get('INLINE', '') != '') and features.get('extra_warnings', false)
 		c_args += c.get_supported_arguments('-Wno-unused-function')
 		cpp_args += cpp.get_supported_arguments('-Wno-unused-function')
 	endif
@@ -1122,8 +1122,8 @@ endif
 
 # "Enable" the postbuild target if building for visual studio.
 # The only relevant bits for Meson is the __inline definition.
-if cpp.get_argument_syntax() == 'msvc'
-	configuration.set('INLINE', '__inline')
+if tgt_cc == 'msvs'
+	features.set('INLINE', '__inline')
 endif
 
 # Other toolchain specific defaults
@@ -1142,7 +1142,7 @@ if features.get('postproc_visualizer', false) and not features.get('postproc', f
 endif
 
 # Enable unit tests by default if we have a working C++ compiler.
-if c.get_argument_syntax() == 'msvc'
+if tgt_cc == 'msvs'
 	feature = 'unit_tests'
 	if not features.has(feature) or feature.get(feature, true)
 		if not feature.get(feature, true)
