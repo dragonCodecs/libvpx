@@ -211,20 +211,20 @@ CONFIG_LIST = [
 # EXCEPT for a couple that I've separated because they're
 # derived from the Meson configuration.
 CMDLINE_SELECT = [
-	# 'dependency_tracking', # Meson enabled by default (see above)
-	# 'external_build', # Meson has no idea of toolchains
-	# 'extra_warnings', # Meson handled
-	# 'werror', # Meson handled
+	'dependency_tracking',
+	'external_build',
+	'extra_warnings',
+	'werror',
 	'install_docs',
 	'install_bins',
 	'install_libs',
 	'install_srcs',
-	# 'debug', # Meson handled
+	'debug',
 	'gprof',
-	# 'gcov', # Meson handled
+	'gcov',
 	'pic',
-	# 'optimizations', # Meson handled
-	# 'ccache', # Meson handled
+	'optimizations',
+	'ccache',
 	'runtime_cpu_detect',
 	'thumb',
 
@@ -232,9 +232,9 @@ CMDLINE_SELECT = [
 	'examples',
 	'tools',
 	'docs',
-	# 'libc', # Meson has no idea of libc
-	# 'as', # Meson handled
-	# 'size_limit', # Meson handled
+	'libc',
+	'as',
+	'size_limit',
 	'codec_srcs',
 	'debug_libs',
 
@@ -242,8 +242,8 @@ CMDLINE_SELECT = [
 	'dc_recon',
 	'postproc',
 	'vp9_postproc',
-	'multithread', # Meson handled
-	'internal_stats', # Meson handled
+	'multithread',
+	'internal_stats',
 ] + CODECS + CODECS_FAMILIES + [
 	'static_msvcrt',
 	'spatial_resampling',
@@ -272,10 +272,78 @@ CMDLINE_SELECT = [
 	'mismatch_debug',
 ]
 
+# These options are either provided or handled by Meson
+#### --- GENERATED EXTERN OPTIONS --- ####
+IGNORE_MESON_BUILTINS = [
+	'help',
+	'log',
+	'target',
+	'extra_cflags',
+	'extra_cxxflags',
+	'extra_warnings',
+	'werror',
+	'optimizations',
+	'pic',
+	'ccache',
+	'debug',
+	'gcov',
+	'dependency_tracking',
+	'libc',
+	'as',
+	'shared',
+	'static',
+	'small',
+]
+
+MESON_OPTIONS = [
+	'gprof',
+	'thumb',
+	'install_docs',
+	'install_bins',
+	'install_libs',
+	'install_srcs',
+	'libs',
+	'examples',
+	'tools',
+	'docs',
+	'unit_tests',
+	'decode_perf_tests',
+	'encode_perf_tests',
+	'codec_srcs',
+	'debug_libs',
+	'static_msvcrt',
+	'vp9_highbitdepth',
+	'better_hw_compatibility',
+	'vp8',
+	'vp9',
+	'internal_stats',
+	'postproc',
+	'vp9_postproc',
+	'multithread',
+	'spatial_resampling',
+	'realtime_only',
+	'onthefly_bitpacking',
+	'error_concealment',
+	'coefficient_range_checking',
+	'runtime_cpu_detect',
+	'postproc_visualizer',
+	'multi_res_encoding',
+	'temporal_denoising',
+	'vp9_temporal_denoising',
+	'webm_io',
+	'libyuv',
+	'vp8_encoder',
+	'vp8_decoder',
+	'vp9_encoder',
+	'vp9_decoder',
+]
+#### --- END GENERATED EXTERN OPTIONS --- ####
+
 VAR_LIST = []
 
 # process #
 
+## process_cmdline ##
 
 # process_cmdline #
 
