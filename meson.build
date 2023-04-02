@@ -470,7 +470,7 @@ if features.get('coefficient_range_checking', false)
 	foreach feature: encoders_features # soft_disable
 		if not feature.get(feature, false) # ! enabled
 			if not features.has(feature) # disabled
-				message('\t disabling @0@'.format())
+				message('\tdisabling @0@'.format(feature))
 			endif
 			features.set(feature, false)
 		endif
@@ -566,9 +566,9 @@ elif tgt_isa == 'loongarch64'
 	features.set('loongarch', true)
 	loongson_features = ['lsx', 'lasx']
 	foreach feature : loongson_features
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		if feature.get(feature, true)
+			if not feature.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
@@ -582,9 +582,9 @@ endif
 
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	feature = 'neon'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
+	if feature.get(feature, true)
+		if not features.has(feature)
+			message('\tenabling @0@'.format(feature))
 		endif
 		features.set(feature, true)
 	endif
@@ -593,9 +593,9 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		# Only enable neon_asm when neon is also enabled.
 		if features.get('neon', false)
 			feature = 'neon_asm'
-			if not features.has(feature) or feature.get(feature, true)
-				if not feature.get(feature, true)
-					message('\t enabling @0@'.format(feature))
+			if feature.get(feature, true)
+				if not features.has(feature)
+					message('\tenabling @0@'.format(feature))
 				endif
 				features.set(feature, true)
 			endif
@@ -669,9 +669,9 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		message('Assuming standalone build with NDK toolchain.')
 		features.set('static', true)
 		feature = 'unit_tests'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		if feature.get(feature, true)
+			if not feature.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
@@ -703,49 +703,60 @@ elif tgt_isa.startswith('mips')
 			gcc_flags = ['-mips64r6', '-mabi=64', '-mfp64']
 			link_args += c.get_supported_link_arguments(gcc_flags)
 		elif tune_cpu.startswith('loongson3')
-			if c.get_supported_arguments('-march=loongson3a')
-				loongson_features = ['mmi', 'msa']
-				foreach feature: loongson_features
-					if not features.has(feature) or feature.get(feature, true)
-						if not feature.get(feature, true)
-							message('\t enabling @0@'.format(feature))
-						endif
-						features.set(feature, true)
-					else
-						features.set(feature, false)
-					endif
-				endforeach
-			else
-				features.set('mmi', true)
-			endif
-
-			if features.get('mmi', false) or features.get('msa', false)
-				feature = 'runtime_cpu_detect'
-				if not features.has(feature) or feature.get(feature, true)
-					if not feature.get(feature, true)
-						message('\t enabling @0@'.format(feature))
+			if c.has_argument('-march=loongson3a')
+				feature = 'mmi'
+				if feature.get(feature, true)
+					if not feature.has(feature)
+						message('\tenabling @0@'.format(feature))
 					endif
 					features.set(feature, true)
 				endif
+			else
+				features.set('mmi', false)
 			endif
 
-			if features.get('msa', false)
-				# TODO(libyuv:793)
-				# The new mips functions in libyuv do not build
-				# with the toolchains we currently use for testing.
-				feature = 'libyuv'
-				if not features.has(feature) or not feature.get(feature, false)
-					if not feature.get(feature, false)
-						message('\t disabling @0@'.format(feature))
+			if c.has_argument('-mmsa')
+				feature = 'msa'
+				if feature.get(feature, true)
+					if not feature.has(feature)
+						message('\tenabling @0@'.format(feature))
 					endif
-					features.set(feature, false)
+					features.set(feature, true)
 				endif
+			else
+				features.set('msa', false)
 			endif
 
-			# KPIC is a flag that is valid only for SunCC.
-			# As such, we'll use the Meson derived version.
+			tgt_isa = 'loongson3a'
+		endif
+
+		if features.get('mmi', false) or features.get('msa', false)
+			feature = 'runtime_cpu_detect'
+			if feature.get(feature, true)
+				if not feature.has(feature)
+					message('\tenabling @0@'.format(feature))
+				endif
+				features.set(feature, true)
+			endif
+		endif
+
+		if features.get('msa', false)
+			# TODO(libyuv:793)
+			# The new mips functions in libyuv do not build
+			# with the toolchains we currently use for testing.
+			feature = 'libyuv'
+			if not feature.get(feature, false) # ! enabled
+				if not features.has(feature) # disabled
+					message('\tdisabling @0@'.format(feature))
+				endif
+				features.set(feature, false)
+			endif
 		endif
 	endif
+
+	c_args += c.get_supported_arguments('-march=@0@'.format(tgt_isa))
+	# KPIC is a flag that is valid only for SunCC.
+	# As such, we'll use the Meson derived version.
 elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 	if features.get('vsx', false)
 		rtcd_options += ['--disable-vsx']
@@ -757,9 +768,9 @@ elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 elif tgt_isa.startswith('x86')
 	if tgt_os == 'android'
 		feature = 'realtime_only'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		if feature.get(feature, true)
+			if not features.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
@@ -814,9 +825,9 @@ elif tgt_isa.startswith('x86')
 			warning('This version of Visual Studio does not support avx512, disabling.....')
 			rtcd_options += ['--disable-avx512']
 			feature = 'avx512'
-			if not features.has(feature) or not feature.get(feature, false)
-				if not feature.get(feature, false)
-					message('\t disabling @0@'.format(feature))
+			if not feature.get(feature, false) # ! enabled
+				if not features.has(feature) # disabled
+					message('\tdisabling @0@'.format(feature))
 				endif
 				features.set(feature, false)
 			endif
@@ -829,11 +840,11 @@ elif tgt_isa.startswith('x86')
 	endif
 
 	feature = 'runtime_cpu_detect'
-	if not features.has(feature) or feature.get(feature, true)
-		if not features.get(feature, true)
-			message('\t enabling @0@'.format(feature))
+	if features.get(tgt_isa, true) # soft_enabled
+		if not features.has(tgt_isa)
+			message('\tenabling@0@'.format(tgt_isa))
 		endif
-		features.set(feature, true)
+		features.set(tgt_isa, true)
 	endif
 
 	# Unline the original, we do can test cflags here :)
@@ -843,7 +854,7 @@ elif tgt_isa.startswith('x86')
 		if disable_exts
 			if features.get(ext, false)
 				rtcd_options += ['--disable-@0@'.format(ext)]
-				message('\t disabling @0@'.format(ext))
+				message('\tdisabling @0@'.format(ext))
 				features.set(ext, false)
 			endif
 		elif not features.get(ext, false)
@@ -852,13 +863,12 @@ elif tgt_isa.startswith('x86')
 			if ext == 'avx512'
 				exts = ['avx512', 'avx512f', 'avx512cd', 'avx512bw', 'avx512dq', 'avx512dl']
 				foreach feature : exts
-					# todo audit ! disabled
-					if features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
+					if features.get('gcc', false) and features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
 						rtcd_options += ['--disable-@0@'.format(feature)]
 					else
-						if not features.has(feature) or feature.get(feature, true)
-							if not feature.get(feature, true)
-								message('\t enabling @0@'.format(feature))
+						if features.get(feature, true) # soft_enabled
+							if not features.has(feature)
+								message('\tenabling@0@'.format(feature))
 							endif
 							features.set(feature, true)
 						endif
@@ -885,13 +895,12 @@ elif tgt_isa.startswith('x86')
 					exts += [ext.split('_')[0]]
 				endif
 				foreach feature : exts
-					# todo audit ! disabled
-					if features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
+					if features.get('gcc', false) and features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
 						rtcd_options += ['--disable-@0@'.format(feature)]
 					else
-						if not features.has(feature) or feature.get(feature, true)
-							if not feature.get(feature, true)
-								message('\t enabling @0@'.format(feature))
+						if features.get(feature, true) # soft_enabled
+							if not features.has(feature)
+								message('\tenabling@0@'.format(feature))
 							endif
 							features.set(feature, true)
 						endif
@@ -968,31 +977,28 @@ elif tgt_isa.startswith('x86')
 		warning('Unknown os @0@ while setting up Nasm flags'.format(tgt_os))
 	endif
 
-elif tgt_isa == 'loongarch64'
-	if features.get('lsx', true)
-		if not c.compiles('void foo(void) { __asm__ volatile(@0@); }'.format('"vadd.b $vr0, $vr1, $vr1"'))
-			features.set('lsx', false)
-		endif
+elif tgt_isa.startswith('loongarch')
+	inline_asm = 'void foo(void) { __asm__ volatile(@0@); }'
+	if features.get('lsx', false)
+		features.set('lsx', c.compiles(inline_asm.format('"vadd.b $vr0, $vr1, $vr1"', name: 'inline asm for Loongson lsx')))
 	endif
-	if features.get('lsx', true)
+	if features.get('lsx', false)
 		feature = 'runtime_cpu_detect'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		if features.get(feature, true) # soft_enabled
+			if not features.has(feature)
+				message('\tenabling@0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
 	endif
-	if features.get('lasx', true)
-		if not c.compiles('void foo(void) { __asm__ volatile(@0@); }'.format('"xvadd.b $xr0, $xr1, $xr1"'))
-			features.set('lasx', false)
-		endif
+	if features.get('lasx', false)
+		features.set('lasx', c.compiles(inline_asm.format('"xvadd.b $xr0, $xr1, $xr1"', name: 'inline asm for Loongson lasx')))
 	endif
-	if features.get('lasx', true)
+	if features.get('lasx', false)
 		feature = 'runtime_cpu_detect'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		if features.get(feature, true) # soft_enabled
+			if not features.has(feature)
+				message('\tenabling@0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
@@ -1196,11 +1202,11 @@ if tgt_cc == 'msvs'
 endif
 
 # Other toolchain specific defaults
-if target_machine.cpu_family() == 'x86' or target_machine.cpu_family() == 'x86_64'
+if target_machine.cpu_family().startswith('x86')
 	feature = 'postproc'
 	if features.get(feature, true)
 		if not features.has(feature)
-			message('\t enabling @0@'.format(feature))
+			message('\tenabling @0@'.format(feature))
 		endif
 		features.set(feature, true)
 	endif
@@ -1212,125 +1218,87 @@ endif
 
 # Enable unit tests by default if we have a working C++ compiler.
 if tgt_cc == 'msvs'
-	feature = 'unit_tests'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
-		endif
-		features.set(feature, true)
-	endif
-	feature = 'webm_io'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
-		endif
-		features.set(feature, true)
-	endif
-	feature = 'libyuv'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
-		endif
-		features.set(feature, true)
-	endif
-elif tgt_os == 'android'
-	if cpp.has_argument('-std=gnu++11')
-		cpp_args += ['-std=gnu++11']
-		feature = 'webm_io'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+	enable_features = ['unit_tests', 'webm_io', 'libyuv']
+	foreach feature: enable_features
+		if features.get(feature, true)
+			if not features.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
+	endforeach
+elif tgt_os == 'android'
+	enable_features = ['libyuv']
+	if cpp.has_argument('-std=gnu++11')
+		cpp_args += ['-std=gnu++11']
+		enable_features += ['webm_io']
 	endif
-	feature = 'libyuv'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
+	foreach feature: enable_features
+		if features.get(feature, true)
+			if not features.has(feature)
+				message('\tenabling @0@'.format(feature))
+			endif
+			features.set(feature, true)
 		endif
-		features.set(feature, true)
-	endif
+	endforeach
 	# GTestLog must be modified to use Android logging utilities.
 elif tgt_os == 'darwin'
 	# Meson already handles the cpp_std flag.
 	# iOS/ARM builds do not work with gtest. This does not match
 	# x86 targets.
 elif target_machine.system() == 'iphonesimulator'
+	enable_features = ['libyuv']
 	if cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
-		feature = 'webm_io'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		enable_features += ['webm_io']
+	endif
+	foreach feature: enable_features
+		if features.get(feature, true)
+			if not features.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
-	endif
-	feature = 'libyuv'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
-		endif
-		features.set(feature, true)
-	endif
+	endforeach
 elif target_machine.system() == 'windows'
 	# Some mingw toolchains don't have pthread available by default.
 	# Treat these more like visual studio where threading in gtest
 	# would be disabled for the same reason.
+	enable_features = []
 	if cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
-		feature = 'unit_tests'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
-			endif
-			features.set(feature, true)
-		endif
-		feature = 'webm_io'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
-			endif
-			features.set(feature, true)
-		endif
+		enable_features += ['unit_tests', 'webm_io']
 	endif
 	if cpp.compiles('int z;')
-		feature = 'libyuv'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		enable_features += ['libyuv']
+	foreach feature: enable_features
+		if features.get(feature, true)
+			if not features.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
-	endif
+	endforeach
 else
-	if features.get('pthread_h', false) and cpp.has_argument('-std=gnu++11')
+	enable_features = []
+	if cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
-		feature = 'unit_tests'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
-			endif
-			features.set(feature, true)
+		if features.get('pthread_h', false)
+			enable_features += ['unit_tests']
 		endif
-	endif
-	feature = 'webm_io'
-	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
-			message('\t enabling @0@'.format(feature))
-		endif
-		features.set(feature, true)
+		enable_features += ['webm_io']
 	endif
 	if cpp.compiles('int z;')
-		feature = 'libyuv'
-		if not features.has(feature) or feature.get(feature, true)
-			if not feature.get(feature, true)
-				message('\t enabling @0@'.format(feature))
+		enable_features += ['libyuv']
+	endif
+	foreach feature: enable_features
+		if features.get(feature, true)
+			if not features.has(feature)
+				message('\tenabling @0@'.format(feature))
 			endif
 			features.set(feature, true)
 		endif
-	endif
+	endforeach
 endif
 
 ### process_detect ###
