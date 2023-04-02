@@ -1375,26 +1375,42 @@ foreach var : VAR_LIST
 	cfgdata.set10(var.to_upper(), features.get(var, false))
 endforeach
 
-version_string = meson.project_version()
-version = meson.project_version().split('.')
+version_str = 'v@0@'.format(meson.project_version())
+bare_version = meson.project_version().split('.')
 
 git = find_program('git', required: false)
 
 if git.found()
-	git_tag = run_command('git describe --match=v[0-9]*', capture: true)
-	if git_tag.stdout() != ''
-		version_string = git_tag.stdout().strip()
-		version = version_string.substring(1).split('.')
+	git_tag = run_command('git', 'describe', '--match=v[0-9]*',
+		capture: true,
+		check: false,
+		env: {
+			'GIT_DIR': meson.current_source_dir() / '.git'
+		}
+	)
+	if git_tag.returncode() == 0
+		version_str = git_tag.stdout().strip()
+		bare_version = version_str.substring(1).split('.')
 	endif
 endif
 
-cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_string))
-cfgdata.set_quoted('VERSION_STRING_NOSP', version_string)
+major_version = bare_version.get(0, 0)
+minor_version = bare_version.get(1, 0)
+patch_version = bare_version.get(2, '').split('-').get(0, 0)
+extra_version = run_command(
+	find_program('python', required: true),
+	'-c',
+	'print(\'-\'.join(\'@0@\'.split(\'-\')[1:]))'.format(version_str),
+	capture: true,
+	check: true
+).stdout().strip()
+cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_str))
+cfgdata.set_quoted('VERSION_STRING_NOSP', version_str)
 #since they'll be used as integers below make sure they are or force to 0
-cfgdata.set('VERSION_MAJOR', version.get(0, 0))
-cfgdata.set('VERSION_MINOR', version.get(1, 0))
-cfgdata.set('VERSION_PATCH', version.get(2, 0))
-cfgdata.set('VERSION_EXTRA', version.get(3, 0))
+cfgdata.set('VERSION_MAJOR', major_version)
+cfgdata.set('VERSION_MINOR', minor_version)
+cfgdata.set('VERSION_PATCH', patch_version)
+cfgdata.set_quoted('VERSION_EXTRA', extra_version)
 cfgdata.set('VERSION_PACKED', '((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))')
 
 vpx_config_h = configure_file(
@@ -1402,7 +1418,7 @@ vpx_config_h = configure_file(
 	configuration: cfgdata,
 )
 
-if features.get('win_arm64_neon_h_workaround')
+if features.get('win_arm64_neon_h_workaround', false)
 	vpx_neon_h = configure_file(
 		input: 'meson/arm_neon.h',
 		output: 'arm_neon.h',
@@ -1415,18 +1431,19 @@ endif
 ##
 
 if meson.version().version_compare('>= 1.1.0')
-	configure_args = meson.build_options()
+	configure_args = meson.build_options().strip()
 else
 	extractor = find_program('meson/capture_build_options.py', required: true)
-	configure_args = run_command(extractor, check: true)
+	configure_args = run_command(extractor, check: true).stdout().strip()
 endif
+
+vpx_config_data = configuration_data()
+vpx_config_data.set_quoted('CONFIGURE_ARGS', configure_args)
 
 vpx_config_c = configure_file(
 	input: 'meson/vpx_config.c',
 	output: 'vpx_config.c',
-	configuration: {
-		'CONFIGURE_ARGS': configure_args
-	}
+	configuration: vpx_config_data,
 )
 
 subdir('vp8')
