@@ -396,8 +396,6 @@ foreach feature: force_enable_features
 	features.set(feature, true)
 endif
 
-# TODO: check the rest of cmdlist_set
-
 ## post_process_common_cmdline ##
 
 ## post_process_cmdline ##
