@@ -1,3 +1,5 @@
+option('enable_features', type: 'array', description: 'Enable  these (possibly undocumented) configuration entries')
+option('disable_features', type: 'array', description: 'Disable these (possibly undocumented) configuration entries')
 option('force_enable_features', type: 'array', description: 'Forcibly set these (possibly undocumented) configuration entries as enabled')
 option('force_disable_features', type: 'array', description: 'Forcibly set these (possibly undocumented) configuration entries as disabled')
 #### --- GENERATED EXTERN OPTIONS --- ####

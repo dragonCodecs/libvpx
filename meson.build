@@ -385,15 +385,75 @@ foreach flag: CMDLINE_SELECT
 	endif
 endif
 
+enable_features = get_option('enable_features')
+disable_features = get_option('disable_features')
 force_disable_features = get_option('force_disable_features')
 force_enable_features = get_option('force_enable_features')
 
+if enable_features.contains('help') or disable_features.contains('help') or force_disable_features.contains('help') or force_enable_features.contains('help')
+	error('''
+		These are the list of available features:
+		Experiments: @0@
+		Codecs:
+		Codec families:
+		Architectures: 
+		Toggles: 
+	'''.format(EXPERIMENT_LIST, CODECS, CODEC_FAMILIES, ARCH_EXT_LIST, CMDLINE_SELECT))
+endif
+
+foreach feature: enable_features
+	if EXPERIMENT_LIST.contains(feature)
+		if features.get('experimental', false)
+			features.set(feature, true)
+		else
+			warning('Ignoring @0@ -- not in experimental mode.'.format(feature))
+		endif
+	elif CODECS.contains(feature) or CODEC_FAMILIES.contains(feature)
+		message('\tenabling @0@'.format(feature))
+		features.set(feature, true)
+		if CODECS.contains(feature)
+			features.set('@0@_encoder'.format(feature), true)
+			features.set('@0@_decoder'.format(feature), true)
+		endif
+	elif ARCH_EXT_LIST.contains(feature)
+		continue
+	elif not features.get(feature, false) # action == 'enable and not enabled
+		if not CMDLINE_SELECT.contains(feature)
+			error('Unknown option @0@'.format(feature))
+		endif
+		message('\tenabling @0@'.format(feature))
+	endif
+	features.set(feature, true)
+endforeach
+foreach feature: disable_features
+	if EXPERIMENT_LIST.contains(feature)
+		if features.get('experimental', false)
+			features.set(feature, false)
+		else
+			warning('Ignoring @0@ -- not in experimental mode.'.format(feature))
+		endif
+	elif CODECS.contains(feature) or CODEC_FAMILIES.contains(feature)
+		message('\tdisabling @0@'.format(feature))
+		features.set(feature, true)
+		if CODECS.contains(feature)
+			features.set('@0@_encoder'.format(feature), false)
+			features.set('@0@_decoder'.format(feature), false)
+		endif
+	elif ARCH_EXT_LIST.contains(feature)
+		rtcd_options += ['--disable-@0@'.format(feature)]
+	elif features.get(feature, true) # action == disable and not disabled
+		if not CMDLINE_SELECT.contains(feature)
+			error('Unknown option @0@'.format(feature))
+		endif
+		message('\tdisabling @0@'.format(feature))
+	endif
+	features.set(feature, true)
+endforeach
+
 foreach feature: force_disable_features
-	message('\t forcibly disabling @0@'.format(feature))
 	features.set(feature, false)
 endforeach
 foreach feature: force_enable_features
-	message('\t forcibly enabling @0@'.format(feature))
 	features.set(feature, true)
 endforeach
 
