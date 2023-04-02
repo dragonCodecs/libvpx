@@ -15,11 +15,12 @@ project(
 
 features = configuration_data()
 
-as = 'nasm'
+as = 'auto'
 
 c_args = []
 cpp_args = []
 asm_args = []
+tune_cpu = ''
 tune_cflags = ''
 rtcd_options = []
 link_args = []
@@ -358,7 +359,7 @@ foreach flag: CMDLINE_SELECT
 	elif MESON_OPTIONS.contains(flag)
 		value = get_option(flag)
 		if value != 'unset'
-			features.set(flag, value)
+			features.set(flag, value == 'true')
 		endif
 	elif flag == 'size_limit'
 		size_limit_value = get_option('size_limit', '').split('x')
@@ -380,10 +381,10 @@ foreach flag: CMDLINE_SELECT
 		endif
 	elif flag == 'cpu'
 		tune_cpu = get_option(flag)
-	elif
-		error('Unhandled option @0@'.format(flag))
+	else
+		continue
 	endif
-endif
+endforeach
 
 enable_features = get_option('enable_features')
 disable_features = get_option('disable_features')
@@ -476,10 +477,11 @@ endif
 
 c = meson.get_compiler('c')
 cpp = meson.get_compiler('cpp')
-asm = meson.get_compiler('nasm')
+asm = meson.get_compiler('c') # asm == GCC
 
 tgt_isa = target_machine.cpu_family()
 tgt_os = target_machine.system()
+tgt_cc = c.get_id()
 
 if tgt_isa == 'arm'
 	# The __SOFTFP__ macro is unreliable, clang defines it
@@ -515,7 +517,7 @@ elif ['darwin', 'ios', 'tvos'].contains(tgt_os)
 			tgt_os = 'iphonesimulator'
 		endif
 	endif
-elif tgt_os == 'linux' or tgt_os == 'android' or tgt_os.ends_with('bsd')
+elif tgt_os == 'linux' or tgt_os == 'android' or tgt_os.endswith('bsd')
 	tgt_os = 'linux'
 elif tgt_os == 'sunos'
 	tgt_os = 'solaris'
@@ -528,7 +530,7 @@ endif
 # Mark the specific ISA requested as enabled
 if tgt_isa == 'arm'
 	features.set('armv7', true)
-elif tgt_isa.starts_with('sparc')
+elif tgt_isa.startswith('sparc')
 	features.set('sparc', true)
 elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 	features.set('ppc64le', true)
@@ -537,11 +539,11 @@ elif tgt_isa == 'mips'
 else
 	features.set(tgt_isa, true)
 endif
-if compiler.get_argument_syntax() == 'msvc'
+if c.get_argument_syntax() == 'msvc'
 	tgt_cc == 'msvs'
-elif compiler.get_id() == 'icc'
+elif c.get_id() == 'icc'
 	tgt_cc == 'icc'
-elif ['gcc', 'clang'].contains(compiler.get_id())
+elif ['gcc', 'clang'].contains(c.get_id())
 	tgt_cc == 'gcc'
 else
 	tgt_cc == 'gnu'
@@ -551,9 +553,9 @@ features.set(tgt_cc, true)
 # Enable the architecture family
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	features.set('arm', true)
-elif tgt_isa.starts_with('mips')
+elif tgt_isa.startswith('mips')
 	features.set('mips', true)
-elif tgt_isa.starts_with('ppc')
+elif tgt_isa.startswith('ppc')
 	features.set('ppc', true)
 elif tgt_isa == 'loongarch64'
 	features.set('loongarch', true)
@@ -570,7 +572,7 @@ endif
 
 # Handle Solaris variants. Solaris 10 needs -lposix4
 if tgt_os == 'solaris'
-	extra_libs += compiler.find_library('posix4', required: true)
+	extra_libs += c.find_library('posix4', required: true)
 endif
 
 if tgt_isa == 'arm' or tgt_isa == 'aarch64'
@@ -675,7 +677,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 	elif tgt_os == 'linux'
 		features.set('linux', true)
 	endif
-elif tgt_isa.starts_with('mips')
+elif tgt_isa.startswith('mips')
 	tune_cflags = '-mtune=@0@'
 
 	if tune_cpu != ''
@@ -695,7 +697,7 @@ elif tgt_isa.starts_with('mips')
 			asm_args += asm.get_supported_arguments(gcc_flags)
 			gcc_flags = ['-mips64r6', '-mabi=64', '-mfp64']
 			link_args += c.get_supported_link_arguments(gcc_flags)
-		elif tune_cpu.starts_with('loongson3')
+		elif tune_cpu.startswith('loongson3')
 			if c.get_supported_arguments('-march=loongson3a')
 				loongson_features = ['mmi', 'msa']
 				foreach feature: loongson_features
@@ -744,10 +746,10 @@ elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 		rtcd_options += ['--disable-vsx']
 	endif
 
-	if tune_cpu.starts_with('power')
+	if tune_cpu.startswith('power')
 		tune_cflags = '-mcpu=@0@'
 	endif
-elif tgt_isa.starts_with('x86')
+elif tgt_isa.startswith('x86')
 	if tgt_os == 'android'
 		feature = 'realtime_only'
 		if not features.has(feature) or feature.get(feature, true)
@@ -782,7 +784,7 @@ elif tgt_isa.starts_with('x86')
 			c_args += c.get_supported_arguments(gcc_flags)
 			cpp_args += cpp.get_supported_arguments(gcc_flags)
 			# xiar is also Meson handled
-			if tune_cpu.starts_with('atom')
+			if tune_cpu.startswith('atom')
 				tune_cflags = '-x'
 				tune_cpu = 'SSE3_ATOM'
 			else
@@ -802,7 +804,7 @@ elif tgt_isa.starts_with('x86')
 		# VS 2017 and earlier.
 		# See https://chromium-review.googlesource.com/c/webm/libvpx/+/751863
 		if c.version().version_compare('< 19.20.27508')
-			warn('This version of Visual Studio does not support avx512, disabling.....')
+			warning('This version of Visual Studio does not support avx512, disabling.....')
 			rtcd_options += ['--disable-avx512']
 			feature = 'avx512'
 			if not features.has(feature) or not feature.get(feature, false)
@@ -821,7 +823,7 @@ elif tgt_isa.starts_with('x86')
 
 	feature = 'runtime_cpu_detect'
 	if not features.has(feature) or feature.get(feature, true)
-		if not feature.get(feature, true)
+		if not features.get(feature, true)
 			message('\t enabling @0@'.format(feature))
 		endif
 		features.set(feature, true)
@@ -865,7 +867,7 @@ elif tgt_isa.starts_with('x86')
 					name: 'supports AVX512',
 					args: '-mavx512f'
 				)
-					warn('disabling avx512: not supported by compiler')
+					warning('disabling avx512: not supported by compiler')
 					features.set('avx512', false)
 					rtcd_options += ['--disable-avx512']
 				endif
@@ -900,7 +902,7 @@ elif tgt_isa.starts_with('x86')
 		runresult = run_command(nasm_exe, '-v', capture: true, check: false)
 		out = runresult.stdout().strip()
 		if out.contains('Apple')
-			warn('Unsupported version of nasm: @0@'.format(runresult.stdout()))
+			warning('Unsupported version of nasm: @0@'.format(runresult.stdout()))
 		elif ['linux', 'solaris'].contains(tgt_os)
 			out = out.split()
 			if out[1].to_lower() == 'version'
@@ -953,10 +955,10 @@ elif tgt_isa.starts_with('x86')
 			# yasm v1.3.0 doesn't know what -fembed-bitcode means, so turning it
 			# on is pointless (unless building a C-only lib). Warn the user, but
 			# do nothing here.
-			warn('Bitcode embed disabled for simulator targets.')
+			warning('Bitcode embed disabled for simulator targets.')
 		endif
 	else
-		warn('Unknown os @0@ while setting up Nasm flags'.format(tgt_os))
+		warning('Unknown os @0@ while setting up Nasm flags'.format(tgt_os))
 	endif
 
 elif tgt_isa == 'loongarch64'
@@ -995,10 +997,10 @@ endif
 # Try to enable CPU specific tuning
 if tune_cpu != ''
 	if tune_cflags != ''
-		tune = compiler.get_supported_arguments(tune_cflags.format(tune_cpu), checked: 'require')
+		tune = c.get_supported_arguments(tune_cflags.format(tune_cpu), checked: 'require')
 		c_args +=  [tune]
 	else
-		warn('CPU tuning not supported by this toolchain')
+		warning('CPU tuning not supported by this toolchain')
 	endif
 endif
 
@@ -1043,18 +1045,18 @@ if features.get('multithread', false)
 endif
 
 # only for MIPS platforms
-if tgt_isa.starts_with('mips')
+if tgt_isa.startswith('mips')
 	if features.get('big_endian', false)
 		if features.get('dspr2', false)
-			warn('dspr2 optimizations are available only for little endian platforms')
+			warning('dspr2 optimizations are available only for little endian platforms')
 			features.set('dspr2', false)
 		endif
 		if features.get('msa', false)
-			warn('msa optimizations are available only for little endian platforms')
+			warning('msa optimizations are available only for little endian platforms')
 			features.get('msa', false)
 		endif
 		if features.get('mmi', false)
-			warn('mmi optimizations are available only for little endian platforms')
+			warning('mmi optimizations are available only for little endian platforms')
 			features.get('mmi', false)
 		endif
 	endif
@@ -1064,11 +1066,11 @@ endif
 if tgt_isa == 'loongarch64'
 	if features.get('big_endian', false)
 		if features.get('lsx', false)
-			warn('lsx optimizations are available only for little endian platforms')
+			warning('lsx optimizations are available only for little endian platforms')
 			features.set('lsx', false)
 		endif
 		if features.get('lasx', false)
-			warn('lasx optimizations are available only for little endian platforms')
+			warning('lasx optimizations are available only for little endian platforms')
 			features.get('lasx', false)
 		endif
 	endif
@@ -1172,12 +1174,12 @@ if features.get('extra_warnings', false)
 	endif
 endif
 
-if features.get('mips')
+if features.get('mips', false)
 	features.set('dequant_tokens', true)
 	features.set('dc_recon', true)
 endif
 
-if features.get('internal_stats')
+if features.get('internal_stats', false)
 	features.set('vp9_postproc', true)
 endif
 
@@ -1190,7 +1192,7 @@ endif
 # Other toolchain specific defaults
 if target_machine.cpu_family() == 'x86' or target_machine.cpu_family() == 'x86_64'
 	feature = 'postproc'
-	if feature.get(feature, true)
+	if features.get(feature, true)
 		if not features.has(feature)
 			message('\t enabling @0@'.format(feature))
 		endif
@@ -1226,7 +1228,7 @@ if tgt_cc == 'msvs'
 		features.set(feature, true)
 	endif
 elif tgt_os == 'android'
-	if cpp.get_supported_arguments('-std=gnu++11')
+	if cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
 		feature = 'webm_io'
 		if not features.has(feature) or feature.get(feature, true)
@@ -1249,7 +1251,7 @@ elif tgt_os == 'darwin'
 	# iOS/ARM builds do not work with gtest. This does not match
 	# x86 targets.
 elif target_machine.system() == 'iphonesimulator'
-	if cpp.get_supported_arguments('-std=gnu++11')
+	if cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
 		feature = 'webm_io'
 		if not features.has(feature) or feature.get(feature, true)
@@ -1270,7 +1272,7 @@ elif target_machine.system() == 'windows'
 	# Some mingw toolchains don't have pthread available by default.
 	# Treat these more like visual studio where threading in gtest
 	# would be disabled for the same reason.
-	if cpp.get_supported_arguments('-std=gnu++11')
+	if cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
 		feature = 'unit_tests'
 		if not features.has(feature) or feature.get(feature, true)
@@ -1297,7 +1299,7 @@ elif target_machine.system() == 'windows'
 		endif
 	endif
 else
-	if features.get('pthread_h', false) and cpp.get_supported_arguments('-std=gnu++11')
+	if features.get('pthread_h', false) and cpp.has_argument('-std=gnu++11')
 		cpp_args += ['-std=gnu++11']
 		feature = 'unit_tests'
 		if not features.has(feature) or feature.get(feature, true)
