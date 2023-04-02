@@ -698,6 +698,37 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			features.set(feature, true)
 		endif
 	elif tgt_os == 'darwin'
+		if tgt_isa.startswith('arm')
+			xcodebuild = find_program('xcodebuild', required: false)
+			if xcodebuild.found()
+				xcode_version = run_command(xcodebuild, '-version',
+					capture: true,
+					check: true
+				).stdout().strip().split('\n').get(0, '').split()
+
+				if features.get('neon', false) and xcode_version.get(1, '').version_compare('>=6.3')
+					feature = 'neon'
+					if not feature.get(feature, false)
+						if not features.has(feature)
+							message('\tdisabling @0@'.format(feature))
+						endif
+						features.set(feature, false)
+					endif
+					warning('\tneon disabled: upgrade Xcode (need v6.3+)')
+					if features.get('neon_asm', false)
+						feature = 'neon_asm'
+						if not feature.get(feature, false)
+							if not features.has(feature)
+								message('\tdisabling @0@'.format(feature))
+							endif
+							features.set(feature, false)
+						endif
+						warning('\tneon disabled: upgrade Xcode (need v6.3+)')
+					endif
+				endif
+			endif
+		endif
+
 		# Darwin toolchain and embed-bitcode options are Meson handled.
 		asm_conversion_exe = find_program('build/make/ads2gas_apple.pl', required: true)
 		asm_conversion_cmd = [asm_conversion_exe]
