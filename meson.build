@@ -1116,8 +1116,6 @@ if features.get('multithread', false)
 		dependencies: threads_dep
 	)
 		extra_libs += threads_dep
-	else
-		feature
 	endif
 endif
 
@@ -1140,7 +1138,7 @@ if tgt_isa.startswith('mips')
 endif
 
 # only for LOONGARCH platforms
-if tgt_isa == 'loongarch64'
+if tgt_isa.startswith('loongarch')
 	if features.get('big_endian', false)
 		if features.get('lsx', false)
 			warning('lsx optimizations are available only for little endian platforms')
@@ -1188,7 +1186,7 @@ if features.get('gcc', false)
 	c_args += c.get_supported_arguments('-Wundef')
 	c_args += c.get_supported_arguments('-Wframe-larger-than=52000')
 
-	if (features.get('mips') or features.get('INLINE', '') != '') and features.get('extra_warnings', false)
+	if (features.get('mips') or features.get('INLINE', '') == '') and features.get('extra_warnings', false)
 		c_args += c.get_supported_arguments('-Wno-unused-function')
 		cpp_args += cpp.get_supported_arguments('-Wno-unused-function')
 	endif
@@ -1243,7 +1241,7 @@ extra_warnings = [
 
 if features.get('extra_warnings', false)
 	c_args += c.get_supported_arguments(extra_warnings)
-	if features.get('gcc', false)
+	if features.get('gcc', false) and features.get('werror', false)
 		foreach w: extra_warnings
 			c_args += c.get_supported_arguments('-Wno-error=@0@'.format(w))
 		endforeach
