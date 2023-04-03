@@ -642,7 +642,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			endif
 		endif
 		# If someone tries to force it through, die.
-		if not features.get('neon', false) and features.get('neon_asm', false)
+		if not features.get('neon', true) and features.get('neon_asm', false)
 			error('Disabling neon while keeping neon-asm is not supported')
 		endif
 	endif
@@ -900,7 +900,7 @@ elif tgt_isa.startswith('x86')
 	elif tgt_cc == 'gcc'
 		tune_cflags = '-march='
 		# #for 32 bit x86 builds, -O3 did not turn on this flag
-		if features.get('optimizations', false) and not features.get('gprof', false)
+		if features.get('optimizations', false) and not features.get('gprof', true)
 			gcc_flags = ['-fomit-frame-pointer']
 			c_args += c.get_supported_arguments(gcc_flags)
 			cpp_args += cpp.get_supported_arguments(gcc_flags)
@@ -940,12 +940,12 @@ elif tgt_isa.startswith('x86')
 	foreach ext : ARCH_EXT_LIST_X86
 		# disable higher order extensions to simplify asm dependencies
 		if disable_exts
-			if features.get(ext, false)
+			if features.get(ext, true)
 				rtcd_options += ['--disable-@0@'.format(ext)]
 				message('\tdisabling @0@'.format(ext))
 				features.set(ext, false)
 			endif
-		elif not features.get(ext, false)
+		elif not features.get(ext, true)
 			disable_exts = true
 		else
 			if ext == 'avx512'
@@ -962,7 +962,7 @@ elif tgt_isa.startswith('x86')
 						endif
 					endif
 				endforeach
-				if not c.compiles('''
+				if features.get('gcc', true) and not c.compiles('''
 					#include <immintrin.h>
 					void f(void) {
 						__m512i x = _mm512_set1_epi16(0);
