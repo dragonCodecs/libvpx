@@ -55,7 +55,7 @@ if doxygen_exe.found()
 		'--version',
 		check: true,
 		capture: true
-	)
+	).stdout().strip()
 
 	if doxygen_version.version_compare('>= 2.0.0') or doxygen_version.version_compare('>= 1.6.0') or doxygen_version.version_compare('>= 1.5.5.3')
 		features.set('doxygen', true)
