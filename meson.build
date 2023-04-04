@@ -1452,11 +1452,13 @@ if git.found()
 	endif
 endif
 
+python_exe = find_program('python', required: true)
+
 major_version = bare_version.get(0, 0)
 minor_version = bare_version.get(1, 0)
 patch_version = bare_version.get(2, '').split('-').get(0, 0)
 extra_version = run_command(
-	find_program('python', required: true),
+	python_exe,
 	'-c',
 	'print(\'-\'.join(\'@0@\'.split(\'-\')[1:]))'.format(version_str),
 	capture: true,
@@ -1529,6 +1531,15 @@ endif
 
 dist_dir = '@0@-@1@'.format(dist_dir, version_str)
 
+config_mk_generator = find_program('meson/transform_config.py', required: true)
+
+config_mk = custom_target(
+	'config.mk',
+	command: [config_mk_generator, '@INPUT@', '@OUTPUT@'],
+	input: vpx_config_h,
+	output: 'config.mk',
+)
+
 ##
 ## END APPLICATION SPECIFIC CONFIGURATION
 ##
@@ -1550,6 +1561,8 @@ vpx_config_c = configure_file(
 )
 
 # libs.mk
+
+rtcd_exe = find_program('build/make/rtcd.pl', required: true)
 
 extra_libs += c.find_library('m', required: false)
 

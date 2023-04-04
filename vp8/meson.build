@@ -431,3 +431,13 @@ endif
 if features.get('vp8_decoder', false)
   codec_srcs += vp8_dx_sources
 endif
+
+vp8_rtcd_h = custom_target(
+  'vp8_rtcd.h',
+  command: [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--sym=@0@'.format('vp8_rtcd'), '--config=@INPUT@'],
+  input: vpx_config_h,
+  output: 'vp8_rtcd.h',
+  capture: true,
+)
+
+codec_srcs += vp8_rtcd_h
