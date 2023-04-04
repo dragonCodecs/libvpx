@@ -1583,3 +1583,11 @@ else
 		install: true,
 	)
 endif
+
+pkg = import('pkgconfig')
+
+pkg.generate(
+	libvpx,
+	description: 'WebM Project VPx codec implementation',
+	version: meson.project_version(),
+)
