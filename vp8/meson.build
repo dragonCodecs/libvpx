@@ -176,18 +176,24 @@ if not features.get('realtime_only', false)
     'encoder/firstpass.c',
     'encoder/temporal_filter.c',
   )
-  vp8_cx_optional_sources['msa'] = vp8_cx_optional_sources['msa'] + files(
+  vp8_cx_optional_sources += {
+    'msa': vp8_cx_optional_sources['msa'] + files(
       'encoder/mips/msa/temporal_filter_msa.c',
     )
+  }
 endif
 
 if features.get('temporal_denoising', true)
-  vp8_cx_optional_sources['sse2'] = vp8_cx_optional_sources['sse2'] + files(
+  vp8_cx_optional_sources += {
+    'sse2': vp8_cx_optional_sources['sse2'] + files(
       'encoder/x86/denoising_sse2.c'
     )
-  vp8_cx_optional_sources['msa'] = vp8_cx_optional_sources['msa'] + files(
+  }
+  vp8_cx_optional_sources += {
+    'msa': vp8_cx_optional_sources['msa'] + files(
       'encoder/mips/msa/denoising_msa.c'
     )
+  }
 endif
 
 vp8_dx_sources = files(
@@ -340,18 +346,24 @@ vp8_common_asm_optional_sources = {
 }
 
 if features.get('postproc', false) # MANUAL
-  vp8_common_asm_optional_sources['sse2'] = vp8_common_asm_optional_sources['sse2'] + files(
-    'common/x86/mfqe_sse2.asm',
-  )
-  vp8_common_asm_optional_sources['msa'] = vp8_common_asm_optional_sources['msa'] + files(
-    'common/mips/msa/mfqe_msa.c',
-  )
+  vp8_common_asm_optional_sources += {
+    'sse2': vp8_common_asm_optional_sources['sse2'] + files(
+      'common/x86/mfqe_sse2.asm',
+    ),
+  }
+  vp8_common_optional_sources += {
+    'msa': vp8_common_optional_sources['msa'] + files(
+      'common/mips/msa/mfqe_msa.c',
+    )
+  }
 endif
 
 if features.get('x86_64', false) # MANUAL
-  vp8_common_asm_optional_sources['sse2'] = vp8_common_asm_optional_sources['sse2'] + files(
-    'common/x86/loopfilter_block_sse2_x86_64.asm',
-  )
+  vp8_common_asm_optional_sources += {
+    'sse2': vp8_common_asm_optional_sources['sse2'] + files(
+      'common/x86/loopfilter_block_sse2_x86_64.asm',
+    ),
+  }
 endif
 
 vp8_cx_asm_optional_sources = {
@@ -366,9 +378,11 @@ vp8_cx_asm_optional_sources = {
 }
 
 if not features.get('realtime_only', false)
-  vp8_cx_asm_optional_sources['sse2'] = vp8_cx_asm_optional_sources['sse2'] + files(
-      'encoder/x86/temporal_filter_apply_sse2.asm'
-    )
+  vp8_common_asm_optional_sources += {
+    'sse2': vp8_common_asm_optional_sources['sse2'] + files(
+      'encoder/x86/temporal_filter_apply_sse2.asm',
+    ),
+  }
 endif
 
 #### --- END GENERATED --- ####

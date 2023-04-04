@@ -1024,6 +1024,8 @@ elif tgt_isa.startswith('x86')
 
 	if as == 'auto'
 		error('Neither yasm nor nasm have been found. See the prerequisites section in the README for more info.')
+	else
+		add_languages('nasm', required: true)
 	endif
 
 	if tgt_os == 'windows' and target_machine.cpu_family() == 'x86'
