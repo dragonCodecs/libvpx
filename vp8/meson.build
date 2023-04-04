@@ -386,3 +386,48 @@ if not features.get('realtime_only', false)
 endif
 
 #### --- END GENERATED --- ####
+
+optional_sources = get_variable('vp8_common_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+  if features.get(comp_name, false)
+    vp8_common_sources += comp_sources
+  endif
+endforeach
+
+codec_srcs += vp8_common_sources
+
+optional_sources = get_variable('vp8_cx_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+  if features.get(comp_name, false)
+    vp8_cx_sources += comp_sources
+  endif
+endforeach
+
+optional_sources = get_variable('vp8_cx_asm_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+  if features.get(comp_name, false)
+    vp8_cx_sources += comp_sources
+  endif
+endforeach
+
+optional_sources = get_variable('vp8_dx_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+  if features.get(comp_name, false)
+    vp8_dx_sources += comp_sources
+  endif
+endforeach
+
+optional_sources = get_variable('vp8_dx_asm_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+  if features.get(comp_name, false)
+    vp8_dx_sources += comp_sources
+  endif
+endforeach
+
+if features.get('vp8_encoder', false)
+  codec_srcs += vp8_cx_sources
+endif
+
+if features.get('vp8_decoder', false)
+  codec_srcs += vp8_dx_sources
+endif

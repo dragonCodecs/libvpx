@@ -1548,3 +1548,38 @@ vpx_config_c = configure_file(
 	output: 'vpx_config.c',
 	configuration: vpx_config_data,
 )
+
+# libs.mk
+
+extra_libs += c.find_library('m', required: false)
+
+codec_srcs = []
+
+subdir('vp8')
+
+soversion = '8.0.0'
+
+if features.get('static', false) and features.get('shared', false)
+	libvpx = both_libraries(
+		'vpx',
+		codec_srcs,
+		dependencies: extra_libs,
+		version: soversion,
+		install: true,
+	)
+elif features.get('shared', false)
+	libvpx = shared_library(
+		'vpx',
+		codec_srcs,
+		dependencies: extra_libs,
+		version: soversion,
+		install: true,
+	)
+else
+	libvpx = static_library(
+		'vpx',
+		codec_srcs,
+		dependencies: extra_libs,
+		install: true,
+	)
+endif
