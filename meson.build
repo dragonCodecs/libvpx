@@ -658,7 +658,6 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 				gcc_flags = ['-mfpu=neon']
 				c_args += c.get_supported_arguments(gcc_flags) #-ftree-vectorize
 				cpp_args += cpp.get_supported_arguments(gcc_flags)
-				asm_args += asm.get_supported_arguments(gcc_flags)
 			endif
 		endif
 
