@@ -66,7 +66,6 @@ def make_to_meson(target: str, paths: list[str]):
                 ofiles = ofiles.strip('\\')
                 ofiles = ofiles.split()
                 ifiles = [ofile for ofile in ofiles if os.path.exists(os.path.join(target, ofile))]
-                print(ifiles)
 
                 if len([of for of in ofiles if not of.startswith("$")]) != len(ifiles):
                     print("WARNING: %s and %s size don't match, not building!" % ([of for of in ofiles if not of.startswith("$")], ifiles))
@@ -163,6 +162,9 @@ paths = {
         'vp9/vp9_common.mk',
         'vp9/vp9cx.mk',
         'vp9/vp9dx.mk',
+    ],
+    'vpx_dsp': [
+        'vpx_dsp/vpx_dsp.mk',
     ],
 }
 
