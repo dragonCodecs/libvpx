@@ -434,7 +434,8 @@ endif
 
 vp8_rtcd_h = custom_target(
   'vp8_rtcd.h',
-  command: [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--sym=@0@'.format('vp8_rtcd'), '--config=@INPUT@'],
+  command: [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--sym=@0@'.format('vp8_rtcd'), '--config=@INPUT@'] + rtcd_options,
+  depend_files: files('common/rtcd_defs.pl'),
   input: vpx_config_h,
   output: 'vp8_rtcd.h',
   capture: true,
