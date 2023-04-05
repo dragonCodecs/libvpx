@@ -647,8 +647,9 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		endif
 	endif
 
-	asm_conversion_exe = ''
+	asm_conversion_exe = disabler()
 	asm_conversion_cmd = []
+	as_sfx = '.asm'
 
 	if tgt_cc == 'gcc'
 		tune_cflags = '-mtune=@0@'
@@ -663,6 +664,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 		asm_conversion_exe = find_program('build/make/ads2gas.pl', required: true)
 		asm_conversion_cmd = [asm_conversion_exe]
+		as_sfx = '.S'
 
 		if tgt_os == 'windows'
 			asm_conversion_cmd += ['-noelf']
@@ -671,11 +673,9 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 		if features.get('thumb', true)
 			asm_conversion_cmd += ['-thumb']
-			gcc_flags = ['-mthumb']
+			gcc_flags = ['-mthumb', '-Wa,-mimplicit-it=always']
 			c_args += c.get_supported_arguments(gcc_flags) #-ftree-vectorize
 			cpp_args += cpp.get_supported_arguments(gcc_flags)
-			gcc_flags = ['-mthumb', '-mimplicit-it=always']
-			asm_args += asm.get_supported_arguments(gcc_flags)
 		endif
 	elif tgt_cc == 'msvs'
 		# A number of ARM-based Windows platforms are constrained by their
@@ -685,6 +685,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		if tgt_isa == 'armv7'
 			asm_conversion_exe = find_program('build/make/ads2armasm_ms.pl', required: true)
 			asm_conversion_cmd = [asm_conversion_exe]
+			as_sfx = '.masm'
 			features.set('multithread', false)
 			features.set('unit_tests', false)
 			# We drive MSVC through Ninja here, so don't disable examples nor tools.
@@ -722,6 +723,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		endif
 	elif tgt_os == 'darwin'
 		if tgt_isa.startswith('arm')
+			as_sfx = '.S'
 			xcodebuild = find_program('xcodebuild', required: false)
 			if xcodebuild.found()
 				xcode_version = run_command(xcodebuild, '-version',
@@ -1026,6 +1028,8 @@ elif tgt_isa.startswith('x86')
 	else
 		add_languages('nasm', required: true)
 	endif
+
+	as_sfx = '.asm'
 
 	if tgt_os == 'windows' and target_machine.cpu_family() == 'x86'
 		asm_args += ['-f', 'win32']
