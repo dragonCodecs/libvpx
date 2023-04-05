@@ -1571,6 +1571,46 @@ extra_libs += c.find_library('m', required: false)
 
 codec_srcs = []
 
+#
+# Rule to make assembler configuration file from C configuration file
+#
+config_asm_generator = find_program('meson/transform_config_asm.py', required: true)
+if features.get('x86', false) or features.get('x86_64')
+	config_asm = custom_target(
+		'config.asm',
+		command: [config_asm_generator, '@INPUT@', '@OUTPUT@', '--format=yasm'],
+		input: vpx_config_h,
+		output: 'config.asm',
+	)
+elif asm_conversion_exe.found()
+	ads_config_asm = custom_target(
+		'ads_config.asm',
+		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
+		input: vpx_config_h,
+		output: 'tmp_config.asm',
+	)
+	config_asm = custom_target(
+		'config.asm',
+		command: asm_conversion_cmd,
+		input: ads_config_asm,
+		feed: true,
+		capture: true,
+		output: 'config.asm',
+	)
+else
+	config_asm = custom_target(
+		'config.asm',
+		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
+		input: vpx_config_h,
+		output: 'config.asm',
+	)
+endif
+
+#
+# Add assembler dependencies for configuration.
+#
+codec_srcs += config_asm
+
 subdir('vp8')
 
 soversion = '8.0.0'
