@@ -118,15 +118,15 @@ def make_to_meson(target: str, paths: list[str]):
                     if '$' in source:
                         print ('Warning: skipping %s' % source)
                         continue
-                    f.write(f"  '{source}',\n")
+                    f.write(f"\t'{source}',\n")
                 f.write(')\n\n')
 
             f.write(f'{component}_{source_type}optional_sources = {{\n')
             for label in sorted (component_sources):
                 if label in skipped:
-                    f.write(f"  # '{label.lower()}' : files(\n")
+                    f.write(f"\t# '{label.lower()}' : files(\n")
                 else:
-                    f.write(f"  '{label.lower()}' : files(\n")
+                    f.write(f"\t'{label.lower()}' : files(\n")
                 l = len (component_sources[label])
                 for i, source in enumerate(component_sources[label]):
                     if '$' in source:
@@ -158,7 +158,12 @@ paths = {
         'vp8/vp8_common.mk',
         'vp8/vp8cx.mk',
         'vp8/vp8dx.mk',
-    ]
+    ],
+    'vp9': [
+        'vp9/vp9_common.mk',
+        'vp9/vp9cx.mk',
+        'vp9/vp9dx.mk',
+    ],
 }
 
 if __name__=='__main__':
