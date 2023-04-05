@@ -131,8 +131,8 @@ def make_to_meson(target: str, paths: list[str]):
                     if '$' in source:
                         print ('Warning: skipping %s' % source)
                         continue
-                    f.write(f"    '{source}'{',' if i + 1 < l else ''}\n")
-                f.write('  ),\n')
+                    f.write(f"\t\t'{source}'{',' if i + 1 < l else ''}\n")
+                f.write('\t),\n')
             f.write('}\n\n')
 
     if has_not_generated:
