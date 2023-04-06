@@ -1629,6 +1629,7 @@ codec_srcs += vpx_version_h
 subdir('vpx_dsp')
 subdir('vpx_scale')
 subdir('vp8')
+subdir('vp9')
 
 soversion = '8.0.0'
 
