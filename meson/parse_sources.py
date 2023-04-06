@@ -186,6 +186,9 @@ paths = {
     'vpx_ports': [
         'vpx_ports/vpx_ports.mk',
     ],
+    'vpx': [
+        'vpx/vpx_codec.mk',
+    ],
 }
 
 if __name__=='__main__':

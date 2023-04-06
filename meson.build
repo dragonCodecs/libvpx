@@ -1627,6 +1627,7 @@ vpx_version_h = configure_file(
 
 codec_srcs += vpx_version_h
 
+subdir('vpx')
 subdir('vpx_mem')
 subdir('vpx_scale')
 subdir('vpx_ports')
