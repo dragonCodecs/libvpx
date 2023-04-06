@@ -1617,6 +1617,7 @@ rtcd_h_template = [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--config=@INPUT0@'] 
 codec_srcs += config_asm
 
 subdir('vpx_dsp')
+subdir('vpx_scale')
 subdir('vp8')
 
 soversion = '8.0.0'

@@ -58,7 +58,6 @@ def make_to_meson(target: str, paths: list[str]):
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = option.group(2)
                     ofiles = option.group(3)
-                    print(ofiles)
                     source_type = PurePosixPath(option.group(3)).suffix.strip('.')
                 elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+(.+)\$\(ASM\)\s*', l):
                     # remove the component suffix and patch the extension in
@@ -115,9 +114,9 @@ def make_to_meson(target: str, paths: list[str]):
 
     # types -> component -> label (feature)
     source_types = (
-        ('', source_maps['c']),
-        ('headers_', source_maps['h']),
-        ('asm_', source_maps['asm']),
+        ('', source_maps.setdefault('c', {})),
+        ('headers_', source_maps.setdefault('h', {})),
+        ('asm_', source_maps.setdefault('asm', {})),
     )
 
     for source_type, components in source_types:
@@ -178,6 +177,9 @@ paths = {
     ],
     'vpx_dsp': [
         'vpx_dsp/vpx_dsp.mk',
+    ],
+    'vpx_scale': [
+        'vpx_scale/vpx_scale.mk',
     ],
 }
 
