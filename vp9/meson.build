@@ -440,13 +440,17 @@ if features.get('vp9_decoder', false)
 	codec_headers += vp9_dx_headers_sources
 endif
 
+vp9_rtcd_defs = files(
+	'common/vp9_rtcd_defs.pl',
+)
+
 vp9_rtcd_h = custom_target(
 	'vp9_rtcd.h',
-	command: [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--sym=@0@'.format('vp9_rtcd'), '--config=@INPUT@'] + rtcd_options,
-	depend_files: files('common/vp9_rtcd_defs.pl'),
-	input: vpx_config_h,
+	command: rtcd_h_template + ['--sym=@0@'.format('vp8_rtcd'), '@INPUT1@'],
+	input: [config_mk, vp9_rtcd_defs[0]],
 	output: 'vp9_rtcd.h',
 	capture: true,
 )
 
 codec_srcs += vp9_rtcd_h
+codec_headers += vp9_rtcd_defs
