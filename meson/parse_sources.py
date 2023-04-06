@@ -48,17 +48,29 @@ def make_to_meson(target: str, paths: list[str]):
 
                 if accumulate:
                     ofiles = l
-                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+(.+)', l):
+                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+([a-zA-Z0-9_/.]+)$', l):
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = ''
                     ofiles = option.group(2)
                     source_type = PurePosixPath(option.group(2)).suffix.strip('.')
-                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+(.+)', l):
+                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+([a-zA-Z0-9_/.]+)$', l):
                     # remove the component suffix
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = option.group(2)
                     ofiles = option.group(3)
                     source_type = PurePosixPath(option.group(3)).suffix.strip('.')
+                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+(.+)\$\(ASM\)$', l):
+                    # remove the component suffix and patch the extension in
+                    component = ''.join(option.group(1).split('_SRCS')).lower()
+                    label = ''
+                    ofiles = f'{option.group(2)}.asm'
+                    source_type = 'c'
+                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+(.+)\$\(ASM\)$', l):
+                    # remove the component suffix and patch the extension in
+                    component = ''.join(option.group(1).split('_SRCS')).lower()
+                    label = option.group(2)
+                    ofiles = f'{option.group(3)}.asm'
+                    source_type = 'c'
                 else:
                     continue
 

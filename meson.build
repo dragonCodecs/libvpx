@@ -495,6 +495,7 @@ foreach feature: CODECS
 endforeach
 
 # Set the {en,de}coders variable if any algorithm in that class is enabled
+# Grep help: CONFIG_DECODERS, decoders, encoders
 foreach feature: CODECS
 	if features.get(feature, true)
 		features.set('@0@s'.format(feature.split('_')[1]), true)
@@ -1575,6 +1576,13 @@ codec_srcs = []
 # Rule to make assembler configuration file from C configuration file
 #
 config_asm_generator = find_program('meson/transform_config_asm.py', required: true)
+
+asm_transformer = generator(
+	find_program('meson/stdinout_wrapper.py', required: true),
+	arguments: ['--input', '@INPUT@', '--output', '@OUTPUT'] + asm_conversion_cmd,
+	output: '@0@.@1@'.format('@BASENAME@', as_sfx)
+)
+
 if features.get('x86', false) or features.get('x86_64')
 	config_asm = custom_target(
 		'config.asm',
@@ -1584,19 +1592,12 @@ if features.get('x86', false) or features.get('x86_64')
 	)
 elif asm_conversion_exe.found()
 	ads_config_asm = custom_target(
-		'ads_config.asm',
+		'config.adstmp',
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
 		input: vpx_config_h,
 		output: 'tmp_config.asm',
 	)
-	config_asm = custom_target(
-		'config.asm',
-		command: asm_conversion_cmd,
-		input: ads_config_asm,
-		feed: true,
-		capture: true,
-		output: 'config.asm',
-	)
+	config_asm = transformer.process(ads_config_asm)
 else
 	config_asm = custom_target(
 		'config.asm',
