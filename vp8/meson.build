@@ -396,6 +396,15 @@ endforeach
 
 codec_srcs += vp8_common_sources
 
+optional_sources = get_variable('vp8_common_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		vp8_common_headers_sources += comp_sources
+	endif
+endforeach
+
+codec_headers += vp8_common_headers_sources
+
 optional_sources = get_variable('vp8_cx_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if features.get(comp_name, false)
@@ -407,6 +416,13 @@ optional_sources = get_variable('vp8_cx_asm_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if features.get(comp_name, false)
 		vp8_cx_sources += comp_sources
+	endif
+endforeach
+
+optional_sources = get_variable('vp8_cx_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		vp8_cx_headers_sources += comp_sources
 	endif
 endforeach
 
@@ -424,12 +440,21 @@ foreach comp_name, comp_sources : optional_sources
 	endif
 endforeach
 
+optional_sources = get_variable('vp8_dx_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		vp8_dx_headers_sources += comp_sources
+	endif
+endforeach
+
 if features.get('vp8_encoder', false)
 	codec_srcs += vp8_cx_sources
+	codec_headers += vp8_cx_headers_sources
 endif
 
 if features.get('vp8_decoder', false)
 	codec_srcs += vp8_dx_sources
+	codec_headers += vp8_dx_headers_sources
 endif
 
 vp8_rtcd_h = custom_target(

@@ -1162,6 +1162,15 @@ endforeach
 
 codec_srcs += dsp_sources
 
+optional_sources = get_variable('dsp_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		dsp_headers_sources += comp_sources
+	endif
+endforeach
+
+codec_headers += dsp_headers_sources
+
 vpx_dsp_rtcd_h = custom_target(
 	'vpx_dsp_rtcd.h',
 	command: [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--sym=@0@'.format('vpx_dsp_rtcd'), '--config=@INPUT@'] + rtcd_options,

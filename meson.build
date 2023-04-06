@@ -1571,6 +1571,7 @@ rtcd_exe = find_program('build/make/rtcd.pl', required: true)
 extra_libs += c.find_library('m', required: false)
 
 codec_srcs = []
+codec_headers = []
 
 #
 # Rule to make assembler configuration file from C configuration file
@@ -1620,6 +1621,7 @@ if features.get('static', false) and features.get('shared', false)
 	libvpx = both_libraries(
 		'vpx',
 		codec_srcs,
+		extra_files: codec_headers,
 		dependencies: extra_libs,
 		version: soversion,
 		install: true,
@@ -1628,6 +1630,7 @@ elif features.get('shared', false)
 	libvpx = shared_library(
 		'vpx',
 		codec_srcs,
+		extra_files: codec_headers,
 		dependencies: extra_libs,
 		version: soversion,
 		install: true,
@@ -1636,6 +1639,7 @@ else
 	libvpx = static_library(
 		'vpx',
 		codec_srcs,
+		extra_files: codec_headers,
 		dependencies: extra_libs,
 		install: true,
 	)

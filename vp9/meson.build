@@ -379,6 +379,15 @@ endforeach
 
 codec_srcs += vp9_common_sources
 
+optional_sources = get_variable('vp9_common_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		vp9_common_headers_sources += comp_sources
+	endif
+endforeach
+
+codec_headers += vp9_common_headers_sources
+
 optional_sources = get_variable('vp9_cx_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if features.get(comp_name, false)
@@ -390,6 +399,13 @@ optional_sources = get_variable('vp9_cx_asm_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if features.get(comp_name, false)
 		vp9_cx_sources += comp_sources
+	endif
+endforeach
+
+optional_sources = get_variable('vp9_cx_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		vp9_cx_headers_sources += comp_sources
 	endif
 endforeach
 
@@ -407,12 +423,21 @@ foreach comp_name, comp_sources : optional_sources
 	endif
 endforeach
 
+optional_sources = get_variable('vp9_dx_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		vp9_dx_headers_sources += comp_sources
+	endif
+endforeach
+
 if features.get('vp9_encoder', false)
 	codec_srcs += vp9_cx_sources
+	codec_headers += vp9_cx_headers_sources
 endif
 
 if features.get('vp9_decoder', false)
 	codec_srcs += vp9_dx_sources
+	codec_headers += vp9_dx_headers_sources
 endif
 
 vp9_rtcd_h = custom_target(
