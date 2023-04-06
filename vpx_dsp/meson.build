@@ -1171,18 +1171,17 @@ endforeach
 
 codec_headers += dsp_headers_sources
 
-vpx_dsp_rtcd_defs = configure_file(
-	input: 'vpx_dsp_rtcd_defs.pl',
-	output: 'vpx_dsp_rtcd.pl',
-	copy: true
+vpx_dsp_rtcd_defs = files(
+	'vpx_dsp_rtcd_defs.pl',
 )
 
 vpx_dsp_rtcd_h = custom_target(
 	'vpx_dsp_rtcd.h',
 	command: rtcd_h_template + ['--sym=@0@'.format('vpx_dsp_rtcd'), '@INPUT1@'],
-	input: [config_mk, vpx_dsp_rtcd_defs],
+	input: [config_mk, vpx_dsp_rtcd_defs[0]],
 	output: 'vpx_dsp_rtcd.h',
 	capture: true,
 )
 
 codec_srcs += vpx_dsp_rtcd_h
+codec_headers += vpx_dsp_rtcd_defs
