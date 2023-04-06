@@ -1641,6 +1641,7 @@ if features.get('static', false) and features.get('shared', false)
 	libvpx = both_libraries(
 		'vpx',
 		codec_srcs,
+		c_args: c_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
 		version: soversion,
@@ -1650,6 +1651,7 @@ elif features.get('shared', false)
 	libvpx = shared_library(
 		'vpx',
 		codec_srcs,
+		c_args: c_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
 		version: soversion,
@@ -1659,6 +1661,7 @@ else
 	libvpx = static_library(
 		'vpx',
 		codec_srcs,
+		c_args: c_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
 		install: true,
