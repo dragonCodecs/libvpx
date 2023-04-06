@@ -1632,6 +1632,7 @@ subdir('vpx_mem')
 subdir('vpx_scale')
 subdir('vpx_ports')
 subdir('vpx_dsp')
+subdir('vpx_util')
 subdir('vp8')
 subdir('vp9')
 
