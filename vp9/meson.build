@@ -114,7 +114,7 @@ vp9_cx_sources = files(
 	'encoder/vp9_encodemv.c',
 	'encoder/vp9_ethread.c',
 	'encoder/vp9_extend.c',
-	'encoder/vp9_firstpass.c',
+	# 'encoder/vp9_firstpass.c', # MANUAL
 	'encoder/vp9_frame_scale.c',
 	'encoder/vp9_lookahead.c',
 	'encoder/vp9_multi_thread.c',
@@ -133,16 +133,16 @@ vp9_cx_sources = files(
 	'encoder/vp9_resize.c',
 	'encoder/vp9_tokenize.c',
 	'encoder/vp9_treewriter.c',
-	'encoder/vp9_aq_variance.c',
-	'encoder/vp9_aq_360.c',
+	# 'encoder/vp9_aq_variance.c', # MANUAL
+	# 'encoder/vp9_aq_360.c', # MANUAL
 	'encoder/vp9_aq_cyclicrefresh.c',
-	'encoder/vp9_aq_complexity.c',
-	'encoder/vp9_alt_ref_aq.c',
+	# 'encoder/vp9_aq_complexity.c', # MANUAL
+	# 'encoder/vp9_alt_ref_aq.c', # MANUAL
 	'encoder/vp9_skin_detection.c',
 	'encoder/vp9_noise_estimate.c',
 	'encoder/vp9_ext_ratectrl.c',
-	'encoder/vp9_temporal_filter.c',
-	'encoder/vp9_mbgraph.c',
+	# 'encoder/vp9_temporal_filter.c', # MANUAL
+	# 'encoder/vp9_mbgraph.c', # MANUAL
 )
 
 vp9_cx_optional_sources = {
@@ -181,8 +181,8 @@ vp9_cx_optional_sources = {
 		'encoder/x86/vp9_denoiser_sse2.c'
 	),
 	'sse4_1' : files(
-		'encoder/x86/temporal_filter_sse4.c',
-		'encoder/x86/highbd_temporal_filter_sse4.c'
+		# 'encoder/x86/temporal_filter_sse4.c', # MANUAL
+		# 'encoder/x86/highbd_temporal_filter_sse4.c', # MANUAL
 	),
 	'ssse3' : files(
 		'encoder/x86/vp9_quantize_ssse3.c',
@@ -193,20 +193,6 @@ vp9_cx_optional_sources = {
 	),
 	'vsx' : files(
 		'encoder/ppc/vp9_quantize_vsx.c'
-	),
-}
-
-vp9_cx_remove_optional_sources = {
-	'realtime_only' : files(
-		'encoder/vp9_firstpass.c',
-		'encoder/vp9_mbgraph.c',
-		'encoder/vp9_temporal_filter.c',
-		'encoder/x86/temporal_filter_sse4.c',
-		'encoder/x86/highbd_temporal_filter_sse4.c',
-		'encoder/vp9_alt_ref_aq.c',
-		'encoder/vp9_aq_variance.c',
-		'encoder/vp9_aq_360.c',
-		'encoder/vp9_aq_complexity.c'
 	),
 }
 
@@ -293,11 +279,11 @@ vp9_cx_headers_sources = files(
 	'encoder/vp9_speed_features.h',
 	'encoder/vp9_subexp.h',
 	'encoder/vp9_resize.h',
-	'encoder/vp9_aq_variance.h',
-	'encoder/vp9_aq_360.h',
-	'encoder/vp9_aq_cyclicrefresh.h',
-	'encoder/vp9_aq_complexity.h',
-	'encoder/vp9_alt_ref_aq.h',
+	# 'encoder/vp9_aq_variance.h', # MANUAL
+	# 'encoder/vp9_aq_360.h', # MANUAL
+	'encoder/vp9_aq_cyclicrefresh.h', # MANUAL
+	# 'encoder/vp9_aq_complexity.h', # MANUAL
+	# 'encoder/vp9_alt_ref_aq.h', # MANUAL
 	'encoder/vp9_skin_detection.h',
 	'encoder/vp9_noise_estimate.h',
 	'encoder/vp9_ext_ratectrl.h',
@@ -317,7 +303,7 @@ vp9_cx_headers_optional_sources = {
 		'encoder/vp9_non_greedy_mv.h'
 	),
 	'sse4_1' : files(
-		'encoder/x86/temporal_filter_constants.h'
+		# 'encoder/x86/temporal_filter_constants.h' # MANUAL
 	),
 	'vp9_temporal_denoising' : files(
 		'encoder/vp9_denoiser.h'
@@ -367,6 +353,46 @@ vp9_cx_asm_optional_sources = {
 		'encoder/x86/vp9_error_sse2.asm'
 	),
 }
+
+if not features.get('realtime_only', false)
+	vp9_cx_sources += files(
+		'encoder/vp9_firstpass.c',
+		'encoder/vp9_mbgraph.c',
+		'encoder/vp9_temporal_filter.c',
+		'encoder/vp9_alt_ref_aq.c',
+		'encoder/vp9_aq_variance.c',
+		'encoder/vp9_aq_360.c',
+		'encoder/vp9_aq_complexity.c'
+	)
+
+	vp9_cx_headers_sources += files(
+		'encoder/vp9_alt_ref_aq.h',
+		'encoder/vp9_aq_variance.h',
+		'encoder/vp9_aq_360.h',
+		'encoder/vp9_aq_complexity.h'
+	)
+
+	vp9_cx_optional_sources += {
+		'sse4_1' : vp9_cx_optional_sources['sse4_1'] + files(
+			'encoder/x86/temporal_filter_sse4.c',
+		),
+	}
+
+	vp9_cx_headers_optional_sources += {
+		'sse4_1' : vp9_cx_headers_optional_sources['sse4_1'] + files(
+			'encoder/x86/temporal_filter_constants.h',
+		),
+	}
+
+	if not features.get('vp9_highbitdepth', true)
+		vp9_cx_optional_sources += {
+			'sse4_1' : vp9_cx_optional_sources['sse4_1'] + files(
+				'encoder/x86/highbd_temporal_filter_sse4.c',
+			),
+		}
+	endif
+endif
+
 
 #### --- END GENERATED --- ####
 
