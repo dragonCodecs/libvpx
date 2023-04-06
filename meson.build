@@ -1628,6 +1628,7 @@ codec_srcs += vpx_version_h
 
 subdir('vpx_mem')
 subdir('vpx_scale')
+subdir('vpx_ports')
 subdir('vpx_dsp')
 subdir('vp8')
 subdir('vp9')

@@ -123,14 +123,13 @@ def make_to_meson(target: str, paths: list[str]):
         for component, component_sources in components.items():
             default_sources = component_sources.pop('', [])
 
-            if default_sources:
-                f.write(f'{component}_{source_type}sources = files(\n')
-                for source in default_sources:
-                    if '$' in source:
-                        print ('Warning: skipping %s' % source)
-                        continue
-                    f.write(f"\t'{source}',\n")
-                f.write(')\n\n')
+            f.write(f'{component}_{source_type}sources = files(\n')
+            for source in default_sources:
+                if '$' in source:
+                    print ('Warning: skipping %s' % source)
+                    continue
+                f.write(f"\t'{source}',\n")
+            f.write(')\n\n')
 
             f.write(f'{component}_{source_type}optional_sources = {{\n')
             for label in sorted (component_sources):
@@ -183,6 +182,9 @@ paths = {
     ],
     'vpx_mem': [
         'vpx_mem/vpx_mem.mk',
+    ],
+    'vpx_ports': [
+        'vpx_ports/vpx_ports.mk',
     ],
 }
 
