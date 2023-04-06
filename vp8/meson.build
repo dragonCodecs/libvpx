@@ -457,11 +457,16 @@ if features.get('vp8_decoder', false)
 	codec_headers += vp8_dx_headers_sources
 endif
 
+vp8_rtcd_defs = configure_file(
+	input: 'common/rtcd_defs.pl',
+	output: 'vp8_rtcd.pl',
+	copy: true
+)
+
 vp8_rtcd_h = custom_target(
 	'vp8_rtcd.h',
-	command: [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--sym=@0@'.format('vp8_rtcd'), '--config=@INPUT@'] + rtcd_options,
-	depend_files: files('common/rtcd_defs.pl'),
-	input: vpx_config_h,
+	command: rtcd_h_template + ['--sym=@0@'.format('vp8_rtcd'), '@INPUT1@'],
+	input: [config_mk, vp8_rtcd_defs],
 	output: 'vp8_rtcd.h',
 	capture: true,
 )

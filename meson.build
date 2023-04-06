@@ -1609,6 +1609,8 @@ else
 	)
 endif
 
+rtcd_h_template = [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--config=@INPUT0@'] + rtcd_options
+
 #
 # Add assembler dependencies for configuration.
 #
