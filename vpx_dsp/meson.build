@@ -477,13 +477,13 @@ if not features.get('postproc', false) and not features.get('vp9_postproc', fals
 	}
 endif
 
-dsp_asm_optional_sources += { # MANUAL
-	'neon_asm' : asm_transformer.process(
+if features.get('neon_asm', false) # MANUAL
+	dsp_sources += asm_transformer.process(
 		files(
 			'arm/intrapred_neon_asm.asm',
 		)
 	)
-}
+endif
 
 if features.get('vp9', false) # MANUAL
 	# interpolation filters
@@ -522,7 +522,7 @@ if features.get('vp9', false) # MANUAL
 		),
 		'dspr2' : dsp_headers_optional_sources['dspr2'] + files(
 			# common (dspr2)
-			'convolve_common_dspr2.h',
+			'mips/convolve_common_dspr2.h',
 			# loop filters
 			'mips/loopfilter_filters_dspr2.h',
 			'mips/loopfilter_macros_dspr2.h',
@@ -597,9 +597,9 @@ if features.get('vp9', false) # MANUAL
 			'mips/loopfilter_mb_horiz_dspr2.c',
 			'mips/loopfilter_mb_vert_dspr2.c',
 		),
-		'vpx' : dsp_optional_sources['vpx'] + files(
+		'vsx' : dsp_optional_sources['vsx'] + files(
 			'ppc/vpx_convolve_vsx.c',
-		)
+		),
 		'lsx' : dsp_optional_sources['lsx'] + files(
 			# common (lsx)
 			'loongarch/vpx_convolve8_avg_horiz_lsx.c',
@@ -632,7 +632,7 @@ if features.get('vp9', false) # MANUAL
 			'sse2' : dsp_optional_sources['sse2'] + files(
 				# loop filters
 				'x86/highbd_loopfilter_sse2.c'
-			)
+			),
 			'neon' : dsp_optional_sources['neon'] + files(
 				'arm/highbd_vpx_convolve_copy_neon.c',
 				'arm/highbd_vpx_convolve_avg_neon.c',
@@ -645,7 +645,7 @@ if features.get('vp9', false) # MANUAL
 	endif
 
 	if features.get('neon_asm', false)
-		dsp_sources += transformer.process(
+		dsp_sources += asm_transformer.process(
 			files(
 				'arm/vpx_convolve_copy_neon_asm.asm',
 				'arm/vpx_convolve8_horiz_filter_type2_neon.asm',
@@ -749,7 +749,7 @@ if features.get('vp9_encoder', false)
 			'msa' : dsp_optional_sources['msa'] + files(
 				# loop filters
 				'mips/fwd_dct32x32_msa.c'
-			)
+			),
 			'lsx' : dsp_optional_sources['lsx'] + files(
 				# loop filters
 				'loongarch/fwd_dct32x32_lsx.c',
@@ -781,9 +781,9 @@ if features.get('vp9', true) # MANUAL
 		'sse2' : dsp_optional_sources['sse2'] + files(
 			'x86/inv_txfm_sse2.c',
 		),
-		'ssse3' : dsp_optional_sources['ssse3'] +  files(
-			'x86/inv_txfm_ssse3.c'.
-		)
+		'ssse3' : dsp_optional_sources['ssse3'] + files(
+			'x86/inv_txfm_ssse3.c',
+		),
 		'neon' : dsp_optional_sources['neon'] + files(
 			'arm/fdct4x4_neon.c',
 			'arm/fdct8x8_neon.c',
@@ -803,7 +803,7 @@ if features.get('vp9', true) # MANUAL
 	}
 
 	if features.get('neon_asm', false)
-		dsp_sources += transformer.process(
+		dsp_sources += asm_transformer.process(
 			files(
 				'arm/save_reg_neon.asm',
 			)
@@ -826,7 +826,7 @@ if features.get('vp9', true) # MANUAL
 				'mips/idct8x8_msa.c',
 				'mips/idct16x16_msa.c',
 				'mips/idct32x32_msa.c',
-			)
+			),
 			'dspr2' : dsp_optional_sources['dspr2'] + files(
 				'mips/itrans4_dspr2.c',
 				'mips/itrans8_dspr2.c',
@@ -860,7 +860,7 @@ if features.get('vp9', true) # MANUAL
 				'arm/highbd_idct32x32_34_add_neon.c',
 				'arm/highbd_idct32x32_135_add_neon.c',
 				'arm/highbd_idct32x32_1024_add_neon.c',
-			)
+			),
 			'sse2' : dsp_optional_sources['sse2'] + files(
 				'x86/highbd_idct4x4_add_sse2.c',
 				'x86/highbd_idct8x8_add_sse2.c',
@@ -877,7 +877,7 @@ if features.get('vp9', true) # MANUAL
 	endif
 
 	if features.get('neon_asm', false)
-		dsp_sources += transformer.process(
+		dsp_sources += asm_transformer.process(
 			files(
 				'arm/idct_neon.asm',
 				'arm/idct4x4_1_add_neon.asm',

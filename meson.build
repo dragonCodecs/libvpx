@@ -17,6 +17,9 @@ features = configuration_data()
 
 c_args = []
 cpp_args = []
+asm_conversion_exe = disabler()
+asm_conversion_cmd = []
+as_sfx = '.asm'
 asm_args = []
 tune_cflags = ''
 rtcd_options = []
@@ -647,10 +650,6 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 			error('Disabling neon while keeping neon-asm is not supported')
 		endif
 	endif
-
-	asm_conversion_exe = disabler()
-	asm_conversion_cmd = []
-	as_sfx = '.asm'
 
 	if tgt_cc == 'gcc'
 		tune_cflags = '-mtune=@0@'
@@ -1578,33 +1577,35 @@ codec_headers = []
 #
 config_asm_generator = find_program('meson/transform_config_asm.py', required: true)
 
-asm_transformer = generator(
-	find_program('meson/stdinout_wrapper.py', required: true),
-	arguments: ['--input', '@INPUT@', '--output', '@OUTPUT'] + asm_conversion_cmd,
-	output: '@0@.@1@'.format('@BASENAME@', as_sfx)
-)
+if asm_conversion_exe.found()
+	asm_transformer = generator(
+		find_program('meson/stdinout_wrapper.py', required: true),
+		arguments: ['--input', '@INPUT@', '--output', '@OUTPUT'] + asm_conversion_cmd,
+		output: '@0@.@1@'.format('@BASENAME@', as_sfx)
+	)
+endif
 
 if features.get('x86', false) or features.get('x86_64')
 	config_asm = custom_target(
-		'config.asm',
+		'vpx_config.asm',
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@', '--format=yasm'],
 		input: vpx_config_h,
-		output: 'config.asm',
+		output: 'vpx_config.asm',
 	)
 elif asm_conversion_exe.found()
 	ads_config_asm = custom_target(
-		'config.adstmp',
+		'vpx_config.adstmp',
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
 		input: vpx_config_h,
-		output: 'tmp_config.asm',
+		output: 'vpx_config.adstmp',
 	)
-	config_asm = transformer.process(ads_config_asm)
+	config_asm = asm_transformer.process(ads_config_asm)
 else
 	config_asm = custom_target(
-		'config.asm',
+		'vpx_config.asm',
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
 		input: vpx_config_h,
-		output: 'config.asm',
+		output: 'vpx_config.asm',
 	)
 endif
 
