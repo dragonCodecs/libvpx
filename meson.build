@@ -1626,8 +1626,8 @@ vpx_version_h = configure_file(
 
 codec_srcs += vpx_version_h
 
-subdir('vpx_dsp')
 subdir('vpx_scale')
+subdir('vpx_dsp')
 subdir('vp8')
 subdir('vp9')
 
