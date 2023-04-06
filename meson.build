@@ -1436,11 +1436,11 @@ foreach var : VAR_LIST
 	cfgdata.set10(var.to_upper(), features.get(var, false))
 endforeach
 
+
 version_str = 'v@0@'.format(meson.project_version())
 bare_version = meson.project_version().split('.')
 
 git = find_program('git', required: false)
-
 if git.found()
 	git_tag = run_command('git', 'describe', '--match=v[0-9]*',
 		capture: true,
@@ -1467,14 +1467,6 @@ extra_version = run_command(
 	capture: true,
 	check: true
 ).stdout().strip()
-cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_str))
-cfgdata.set_quoted('VERSION_STRING_NOSP', version_str)
-#since they'll be used as integers below make sure they are or force to 0
-cfgdata.set('VERSION_MAJOR', major_version)
-cfgdata.set('VERSION_MINOR', minor_version)
-cfgdata.set('VERSION_PATCH', patch_version)
-cfgdata.set_quoted('VERSION_EXTRA', extra_version)
-cfgdata.set('VERSION_PACKED', '((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))')
 
 vpx_config_h = configure_file(
 	output: 'vpx_config.h',
@@ -1615,6 +1607,24 @@ rtcd_h_template = [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--config=@INPUT0@'] 
 # Add assembler dependencies for configuration.
 #
 codec_srcs += config_asm
+
+version_cfgdata = configuration_data()
+
+#since they'll be used as integers below make sure they are or force to 0
+version_cfgdata.set('VERSION_MAJOR', major_version)
+version_cfgdata.set('VERSION_MINOR', minor_version)
+version_cfgdata.set('VERSION_PATCH', patch_version)
+version_cfgdata.set_quoted('VERSION_EXTRA', extra_version)
+version_cfgdata.set('VERSION_PACKED', '((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))')
+version_cfgdata.set_quoted('VERSION_STRING_NOSP', version_str)
+version_cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_str))
+
+vpx_version_h = configure_file(
+	output: 'vpx_version.h',
+	configuration: version_cfgdata
+)
+
+codec_srcs += vpx_version_h
 
 subdir('vpx_dsp')
 subdir('vpx_scale')
