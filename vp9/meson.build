@@ -159,15 +159,15 @@ vp9_cx_optional_sources = {
 	),
 	'msa' : files(
 		'encoder/mips/msa/vp9_error_msa.c',
-		'encoder/mips/msa/vp9_fdct4x4_msa.c',
-		'encoder/mips/msa/vp9_fdct8x8_msa.c',
-		'encoder/mips/msa/vp9_fdct16x16_msa.c'
+		# 'encoder/mips/msa/vp9_fdct4x4_msa.c', # MANUAL
+		# 'encoder/mips/msa/vp9_fdct8x8_msa.c', # MANUAL
+		# 'encoder/mips/msa/vp9_fdct16x16_msa.c' # MANUAL
 	),
 	'neon' : files(
 		'encoder/arm/neon/vp9_diamond_search_sad_neon.c',
 		'encoder/arm/neon/vp9_dct_neon.c',
-		'encoder/arm/neon/vp9_denoiser_neon.c',
-		'encoder/arm/neon/vp9_error_neon.c',
+		# 'encoder/arm/neon/vp9_denoiser_neon.c', # MANUAL
+		# 'encoder/arm/neon/vp9_error_neon.c', # MANUAL
 		'encoder/arm/neon/vp9_frame_scale_neon.c',
 		'encoder/arm/neon/vp9_quantize_neon.c'
 	),
@@ -178,7 +178,7 @@ vp9_cx_optional_sources = {
 		'encoder/x86/vp9_quantize_sse2.c',
 		'encoder/x86/vp9_highbd_block_error_intrin_sse2.c',
 		'encoder/x86/vp9_dct_intrin_sse2.c',
-		'encoder/x86/vp9_denoiser_sse2.c'
+		# 'encoder/x86/vp9_denoiser_sse2.c' # MANUAL
 	),
 	'sse4_1' : files(
 		# 'encoder/x86/temporal_filter_sse4.c', # MANUAL
@@ -297,7 +297,7 @@ vp9_cx_headers_optional_sources = {
 		'common/vp9_postproc.h'
 	),
 	'msa' : files(
-		'encoder/mips/msa/vp9_fdct_msa.h'
+		# 'encoder/mips/msa/vp9_fdct_msa.h' # MANUAL
 	),
 	'non_greedy_mv' : files(
 		'encoder/vp9_non_greedy_mv.h'
@@ -354,6 +354,39 @@ vp9_cx_asm_optional_sources = {
 	),
 }
 
+if features.get('temporal_denoising', false)
+	vp9_cx_optional_sources += {
+		'neon' : vp9_cx_optional_sources['neon'] + files(
+			'encoder/arm/neon/vp9_error_neon.c',
+		),
+	}
+endif
+
+if features.get('vp9_highbitdepth', false)
+	vp9_cx_optional_sources += {
+		'sse2' : vp9_cx_optional_sources['sse2'] + files(
+			'encoder/x86/vp9_denoiser_sse2.c',
+		),
+		'neon' : vp9_cx_optional_sources['neon'] + files(
+			'encoder/arm/neon/vp9_denoiser_neon.c',
+		),
+	}
+else
+	vp9_cx_optional_sources += {
+		'msa' : vp9_cx_optional_sources['msa'] + files(
+			'encoder/mips/msa/vp9_fdct4x4_msa.c',
+			'encoder/mips/msa/vp9_fdct8x8_msa.c',
+			'encoder/mips/msa/vp9_fdct16x16_msa.c'
+		),
+	}
+
+	vp9_cx_headers_optional_sources += {
+		'msa' : vp9_cx_headers_optional_sources['msa'] + files(
+			'encoder/mips/msa/vp9_fdct_msa.h'
+		),
+	}
+endif
+
 if not features.get('realtime_only', false)
 	vp9_cx_sources += files(
 		'encoder/vp9_firstpass.c',
@@ -380,7 +413,7 @@ if not features.get('realtime_only', false)
 
 	vp9_cx_headers_optional_sources += {
 		'sse4_1' : vp9_cx_headers_optional_sources['sse4_1'] + files(
-			'encoder/x86/temporal_filter_constants.h',
+			'encoder/x86/temporal_filter_constants.h'
 		),
 	}
 
@@ -392,7 +425,6 @@ if not features.get('realtime_only', false)
 		}
 	endif
 endif
-
 
 #### --- END GENERATED --- ####
 
