@@ -1,4 +1,4 @@
-# vp9_common.mk
+# vpx_dsp.mk
 
 #### --- GENERATED --- ####
 
@@ -18,12 +18,13 @@ dsp_sources = files(
 	# 'arm/vpx_convolve8_vert_filter_type2_neon.asm', # MANUAL
 	# 'arm/vpx_convolve8_horiz_filter_type1_neon.asm', # MANUAL
 	# 'arm/vpx_convolve8_vert_filter_type1_neon.asm', # MANUAL
-	# 'arm/vpx_convolve8_avg_horiz_filter_type2_neon.asm' # MANUAL,
+	# 'arm/vpx_convolve8_avg_horiz_filter_type2_neon.asm', # MANUAL
 	# 'arm/vpx_convolve8_avg_vert_filter_type2_neon.asm', # MANUAL
 	# 'arm/vpx_convolve8_avg_horiz_filter_type1_neon.asm', # MANUAL
 	# 'arm/vpx_convolve8_avg_vert_filter_type1_neon.asm', # MANUAL
 	# 'arm/vpx_convolve_avg_neon_asm.asm', # MANUAL
 	# 'arm/vpx_convolve8_neon_asm.c', # MANUAL
+	# 'arm/vpx_convolve_neon.c', # MANUAL
 	# 'arm/vpx_convolve_copy_neon.c', # MANUAL
 	# 'arm/vpx_convolve8_neon.c', # MANUAL
 	# 'arm/vpx_convolve_avg_neon.c', # MANUAL
@@ -32,42 +33,42 @@ dsp_sources = files(
 	# 'arm/loopfilter_16_neon.asm', # MANUAL
 	# 'arm/loopfilter_8_neon.asm', # MANUAL
 	# 'arm/loopfilter_4_neon.asm', # MANUAL
-	'fwd_txfm.c',
-	'inv_txfm.c',
-	'arm/idct_neon.asm',
-	'arm/idct4x4_1_add_neon.asm',
-	'arm/idct4x4_add_neon.asm',
-	'quantize.c',
-	'avg.c',
+	# 'fwd_txfm.c', # MANUAL
+	# 'inv_txfm.c', # MANUAL
+	# 'arm/idct_neon.asm', # MANUAL
+	# 'arm/idct4x4_1_add_neon.asm', # MANUAL
+	# 'arm/idct4x4_add_neon.asm', # MANUAL
+	# 'quantize.c', # MANUAL
+	# 'avg.c', # MANUAL
 	'skin_detection.c',
-	'sad.c',
-	'subtract.c',
-	'sum_squares.c',
-	'variance.c',
+	# 'sad.c', # MANUAL
+	# 'subtract.c', # MANUAL
+	# 'sum_squares.c', # MANUAL
+	# 'variance.c', # MANUAL
 	'vpx_dsp_rtcd.c',
 )
 
 dsp_optional_sources = {
 	'avx' : files(
-		'x86/quantize_avx.c'
+		# 'x86/quantize_avx.c' # MANUAL
 	),
 	'avx2' : files(
 		# 'x86/vpx_subpixel_8t_intrin_avx2.c', # MANUAL
 		# 'x86/highbd_convolve_avx2.c', # MANUAL
 		# 'x86/loopfilter_avx2.c', # MANUAL
 		# 'x86/fwd_txfm_avx2.c', # MANUAL
-		'x86/quantize_avx2.c',
-		'x86/highbd_quantize_intrin_avx2.c',
-		'x86/avg_intrin_avx2.c',
-		'x86/sad4d_avx2.c',
-		'x86/sad_avx2.c',
-		'x86/subtract_avx2.c',
-		'x86/highbd_sad4d_avx2.c',
-		'x86/highbd_sad_avx2.c',
-		'x86/variance_avx2.c'
+		# 'x86/quantize_avx2.c', # MANUAL
+		# 'x86/highbd_quantize_intrin_avx2.c', # MANUAL
+		# 'x86/avg_intrin_avx2.c', # MANUAL
+		# 'x86/sad4d_avx2.c', # MANUAL
+		# 'x86/sad_avx2.c', # MANUAL
+		# 'x86/subtract_avx2.c', # MANUAL
+		# 'x86/highbd_sad4d_avx2.c', # MANUAL
+		# 'x86/highbd_sad_avx2.c', # MANUAL
+		# 'x86/variance_avx2.c' # MANUAl
 	),
 	'avx512' : files(
-		'x86/sad4d_avx512.c'
+		# 'x86/sad4d_avx512.c' # MANUAL
 	),
 	'dspr2' : files(
 		'mips/intrapred4_dspr2.c',
@@ -88,11 +89,11 @@ dsp_optional_sources = {
 		# 'mips/loopfilter_mb_dspr2.c', # MANUAL
 		# 'mips/loopfilter_mb_horiz_dspr2.c', # MANUAL
 		# 'mips/loopfilter_mb_vert_dspr2.c', # MANUAL
-		'mips/itrans4_dspr2.c',
-		'mips/itrans8_dspr2.c',
-		'mips/itrans16_dspr2.c',
-		'mips/itrans32_dspr2.c',
-		'mips/itrans32_cols_dspr2.c'
+		# 'mips/itrans4_dspr2.c', # MANUAL
+		# 'mips/itrans8_dspr2.c', # MANUAL
+		# 'mips/itrans16_dspr2.c', # MANUAL
+		# 'mips/itrans32_dspr2.c', # MANUAL
+		# 'mips/itrans32_cols_dspr2.c' # MANUAL
 	),
 	'internal_stats' : files(
 		# 'ssim.c', # MANUAL
@@ -114,20 +115,20 @@ dsp_optional_sources = {
 		# 'loongarch/loopfilter_4_lsx.c', # MANUAL
 		# 'loongarch/fwd_txfm_lsx.c', # MANUAL
 		# 'loongarch/fwd_dct32x32_lsx.c', # MANUAL
-		'loongarch/idct32x32_lsx.c',
-		'loongarch/quantize_lsx.c',
-		'loongarch/avg_lsx.c',
-		'loongarch/sad_lsx.c',
-		'loongarch/subtract_lsx.c',
-		'loongarch/variance_lsx.c',
-		'loongarch/sub_pixel_variance_lsx.c',
-		'loongarch/avg_pred_lsx.c'
+		# 'loongarch/idct32x32_lsx.c', # MANUAL
+		# 'loongarch/quantize_lsx.c', # MANUAL
+		# 'loongarch/avg_lsx.c', # MANUAL
+		# 'loongarch/sad_lsx.c', # MANUAL
+		# 'loongarch/subtract_lsx.c', # MANUAL
+		# 'loongarch/variance_lsx.c', # MANUAL
+		# 'loongarch/sub_pixel_variance_lsx.c', # MANUAL
+		# 'loongarch/avg_pred_lsx.c' # MANUAl
 	),
 	'mmi' : files(
-		# 'mips/vpx_convolve8_mmi.c',
-		'mips/sad_mmi.c',
-		'mips/subtract_mmi.c',
-		'mips/variance_mmi.c'
+		# 'mips/vpx_convolve8_mmi.c', # MANUAL
+		# 'mips/sad_mmi.c', # MANUAL
+		# 'mips/subtract_mmi.c', # MANUAL
+		# 'mips/variance_mmi.c' # MANUAl
 	),
 	'msa' : files(
 		# 'mips/add_noise_msa.c', # MANUAL
@@ -144,18 +145,18 @@ dsp_optional_sources = {
 		# 'mips/loopfilter_16_msa.c', # MANUAL
 		# 'mips/loopfilter_8_msa.c', # MANUAL
 		# 'mips/loopfilter_4_msa.c', # MANUAL
-		'mips/fwd_txfm_msa.c',
+		# 'mips/fwd_txfm_msa.c', # MANUAL
 		# 'mips/fwd_dct32x32_msa.c', # MANUAL
-		'mips/idct4x4_msa.c',
-		'mips/idct8x8_msa.c',
-		'mips/idct16x16_msa.c',
-		'mips/idct32x32_msa.c',
-		'mips/avg_msa.c',
-		'mips/sum_squares_msa.c',
-		'mips/sad_msa.c',
-		'mips/subtract_msa.c',
-		'mips/variance_msa.c',
-		'mips/sub_pixel_variance_msa.c'
+		# 'mips/idct4x4_msa.c', # MANUAL
+		# 'mips/idct8x8_msa.c', # MANUAL
+		# 'mips/idct16x16_msa.c', # MANUAL
+		# 'mips/idct32x32_msa.c', # MANUAL
+		# 'mips/avg_msa.c', # MANUAL
+		# 'mips/sum_squares_msa.c', # MANUAL
+		# 'mips/sad_msa.c', # MANUAL
+		# 'mips/subtract_msa.c', # MANUAL
+		# 'mips/variance_msa.c', # MANUAL
+		# 'mips/sub_pixel_variance_msa.c' # MANUAL
 	),
 	'neon' : files(
 		# 'arm/highbd_intrapred_neon.c', # MANUAL
@@ -173,40 +174,40 @@ dsp_optional_sources = {
 		# 'arm/fdct16x16_neon.c', # MANUAL
 		# 'arm/fdct32x32_neon.c', # MANUAL
 		# 'arm/fdct_partial_neon.c', # MANUAL
-		'arm/highbd_idct4x4_add_neon.c',
-		'arm/highbd_idct8x8_add_neon.c',
-		'arm/highbd_idct16x16_add_neon.c',
-		'arm/highbd_idct32x32_add_neon.c',
-		'arm/highbd_idct32x32_34_add_neon.c',
-		'arm/highbd_idct32x32_135_add_neon.c',
-		'arm/highbd_idct32x32_1024_add_neon.c',
-		'arm/idct4x4_1_add_neon.c',
-		'arm/idct4x4_add_neon.c',
-		'arm/idct8x8_1_add_neon.c',
-		'arm/idct8x8_add_neon.c',
-		'arm/idct16x16_1_add_neon.c',
-		'arm/idct16x16_add_neon.c',
-		'arm/idct32x32_1_add_neon.c',
-		'arm/idct32x32_34_add_neon.c',
-		'arm/idct32x32_135_add_neon.c',
-		'arm/idct32x32_add_neon.c',
-		'arm/quantize_neon.c',
-		'arm/highbd_quantize_neon.c',
-		'arm/avg_neon.c',
-		'arm/hadamard_neon.c',
-		'arm/sum_squares_neon.c',
-		'arm/sad4d_neon.c',
-		'arm/sad_neon.c',
-		'arm/subtract_neon.c',
-		'arm/highbd_sad_neon.c',
-		'arm/avg_pred_neon.c',
-		'arm/subpel_variance_neon.c',
-		'arm/variance_neon.c',
-		'arm/highbd_variance_neon.c'
+		# 'arm/highbd_idct4x4_add_neon.c', # MANUAL
+		# 'arm/highbd_idct8x8_add_neon.c', # MANUAL
+		# 'arm/highbd_idct16x16_add_neon.c', # MANUAL
+		# 'arm/highbd_idct32x32_add_neon.c', # MANUAL
+		# 'arm/highbd_idct32x32_34_add_neon.c', # MANUAL
+		# 'arm/highbd_idct32x32_135_add_neon.c', # MANUAL
+		# 'arm/highbd_idct32x32_1024_add_neon.c', # MANUAL
+		# 'arm/idct4x4_1_add_neon.c', # MANUAL
+		# 'arm/idct4x4_add_neon.c', # MANUAL
+		# 'arm/idct8x8_1_add_neon.c', # MANUAL
+		# 'arm/idct8x8_add_neon.c', # MANUAL
+		# 'arm/idct16x16_1_add_neon.c', # MANUAL
+		# 'arm/idct16x16_add_neon.c', # MANUAL
+		# 'arm/idct32x32_1_add_neon.c', # MANUAL
+		# 'arm/idct32x32_34_add_neon.c', # MANUAL
+		# 'arm/idct32x32_135_add_neon.c', # MANUAL
+		# 'arm/idct32x32_add_neon.c', # MANUAL
+		# 'arm/quantize_neon.c', # MANUAL
+		# 'arm/highbd_quantize_neon.c', # MANUAL
+		# 'arm/avg_neon.c', # MANUAL
+		# 'arm/hadamard_neon.c', # MANUAL
+		# 'arm/sum_squares_neon.c', # MANUAL
+		# 'arm/sad4d_neon.c', # MANUAL
+		# 'arm/sad_neon.c', # MANUAL
+		# 'arm/subtract_neon.c', # MANUAL
+		# 'arm/highbd_sad_neon.c', # MANUAL
+		# 'arm/avg_pred_neon.c', # MANUAL
+		# 'arm/subpel_variance_neon.c', # MANUAL
+		# 'arm/variance_neon.c', # MANUAL
+		# 'arm/highbd_variance_neon.c' # MANUAL
 	),
 	'neon_asm' : files(
-		'arm/intrapred_neon_asm.asm',
-		'arm/save_reg_neon.asm'
+		# 'arm/intrapred_neon_asm.asm', # MANUAL
+		# 'arm/save_reg_neon.asm' # MANUAL
 	),
 	'sse2' : files(
 		# 'x86/highbd_intrapred_intrin_sse2.c', # MANUAL
@@ -215,41 +216,42 @@ dsp_optional_sources = {
 		# 'x86/loopfilter_sse2.c', # MANUAL
 		# 'x86/highbd_loopfilter_sse2.c', # MANUAL
 		# 'x86/fwd_txfm_sse2.c', # MANUAL
-		'x86/inv_txfm_sse2.c',
-		'x86/highbd_idct4x4_add_sse2.c',
-		'x86/highbd_idct8x8_add_sse2.c',
-		'x86/highbd_idct16x16_add_sse2.c',
-		'x86/highbd_idct32x32_add_sse2.c',
-		'x86/quantize_sse2.c',
-		'x86/highbd_quantize_intrin_sse2.c',
-		'x86/avg_intrin_sse2.c',
-		'x86/sum_squares_sse2.c',
-		'x86/avg_pred_sse2.c',
-		'x86/highbd_variance_sse2.c'
+		# 'x86/inv_txfm_sse2.c', # MANUAL
+		# 'x86/highbd_idct4x4_add_sse2.c', # MANUAL
+		# 'x86/highbd_idct8x8_add_sse2.c', # MANUAL
+		# 'x86/highbd_idct16x16_add_sse2.c', # MANUAL
+		# 'x86/highbd_idct32x32_add_sse2.c', # MANUAL
+		# 'x86/quantize_sse2.c', # MANUAL
+		# 'x86/highbd_quantize_intrin_sse2.c', # MANUAL
+		# 'x86/avg_intrin_sse2.c', # MANUAL
+		# 'x86/sum_squares_sse2.c', # MANUAL
+		# 'x86/avg_pred_sse2.c', # MANUAL
+		# 'x86/variance_sse2.c', # MANUAL
+		# 'x86/highbd_variance_sse2.c' # MANUAL
 	),
 	'sse4_1' : files(
-		'x86/highbd_idct4x4_add_sse4.c',
-		'x86/highbd_idct8x8_add_sse4.c',
-		'x86/highbd_idct16x16_add_sse4.c',
-		'x86/highbd_idct32x32_add_sse4.c'
+		# 'x86/highbd_idct4x4_add_sse4.c', # MANUAL
+		# 'x86/highbd_idct8x8_add_sse4.c', # MANUAL
+		# 'x86/highbd_idct16x16_add_sse4.c', # MANUAL
+		# 'x86/highbd_idct32x32_add_sse4.c' # MANUAL
 	),
 	'ssse3' : files(
 		# 'x86/highbd_intrapred_intrin_ssse3.c', # MANUAL
-		'x86/vpx_subpixel_8t_intrin_ssse3.c',
-		'x86/inv_txfm_ssse3.c',
-		'x86/quantize_ssse3.c'
+		# 'x86/vpx_subpixel_8t_intrin_ssse3.c', # MANUAL
+		# 'x86/inv_txfm_ssse3.c', # MANUAL
+		# 'x86/quantize_ssse3.c' # MANUAL
 	),
 	'vsx' : files(
 		'ppc/intrapred_vsx.c',
 		# 'ppc/deblock_vsx.c', # MANUAL
 		# 'ppc/vpx_convolve_vsx.c', # MANUAL
-		# 'ppc/fdct32x32_vsx.c', # MANUAl
-		'ppc/inv_txfm_vsx.c',
-		'ppc/quantize_vsx.c',
-		'ppc/hadamard_vsx.c',
-		'ppc/sad_vsx.c',
-		'ppc/subtract_vsx.c',
-		'ppc/variance_vsx.c'
+		# 'ppc/fdct32x32_vsx.c', # MANUAL
+		# 'ppc/inv_txfm_vsx.c', # MANUAL
+		# 'ppc/quantize_vsx.c', # MANUAL
+		# 'ppc/hadamard_vsx.c', # MANUAL
+		# 'ppc/sad_vsx.c', # MANUAL
+		# 'ppc/subtract_vsx.c', # MANUAl
+		# 'ppc/variance_vsx.c' # MANUAl
 	),
 }
 
@@ -266,11 +268,11 @@ dsp_headers_sources = files(
 	# 'vpx_convolve.h', # MANUAL
 	# 'arm/vpx_convolve8_neon_asm.h', # MANUAL
 	'txfm_common.h',
-	# 'fwd_txfm.h',
-	'inv_txfm.h',
-	'quantize.h',
+	# 'fwd_txfm.h', # MANUAL
+	# 'inv_txfm.h', # MANUAL
+	# 'quantize.h', # MANUAL
 	'skin_detection.h',
-	'variance.h',
+	# 'variance.h', # MANUAL
 )
 
 dsp_headers_optional_sources = {
@@ -285,7 +287,7 @@ dsp_headers_optional_sources = {
 		# 'mips/loopfilter_filters_dspr2.h', # MANUAL
 		# 'mips/loopfilter_macros_dspr2.h', # MANUAL
 		# 'mips/loopfilter_masks_dspr2.h', # MANUAL
-		'mips/inv_txfm_dspr2.h'
+		# 'mips/inv_txfm_dspr2.h' # MANUAL
 	),
 	'internal_stats' : files(
 		# 'ssim.h' # MANUAL
@@ -295,7 +297,7 @@ dsp_headers_optional_sources = {
 		# 'loongarch/loopfilter_lsx.h', # MANUAL
 		'loongarch/txfm_macros_lsx.h',
 		# 'loongarch/fwd_txfm_lsx.h', # MANUAL
-		'loongarch/variance_lsx.h',
+		# 'loongarch/variance_lsx.h', # MANUAl
 		'loongarch/bitdepth_conversion_lsx.h'
 	),
 	'msa' : files(
@@ -304,10 +306,10 @@ dsp_headers_optional_sources = {
 		# 'mips/loopfilter_msa.h', # MANUAL
 		'mips/txfm_macros_msa.h',
 		# 'mips/fwd_txfm_msa.h', # MANUAL
-		'mips/inv_txfm_msa.h'
+		# 'mips/inv_txfm_msa.h' # MANUAL
 	),
 	'neon' : files(
-		'arm/highbd_idct_neon.h',
+		# 'arm/highbd_idct_neon.h', # MANUAL
 		'arm/idct_neon.h',
 		'arm/mem_neon.h',
 		'arm/sum_neon.h',
@@ -321,19 +323,19 @@ dsp_headers_optional_sources = {
 		# 'x86/fwd_txfm_sse2.h', # MANUAL
 		# 'x86/fwd_txfm_impl_sse2.h', # MANUAL
 		# 'x86/fwd_dct32x32_impl_sse2.h', # MANUAL
-		'x86/inv_txfm_sse2.h',
-		'x86/highbd_inv_txfm_sse2.h',
-		'x86/quantize_sse2.h',
+		# 'x86/inv_txfm_sse2.h', # MANUAL
+		# 'x86/highbd_inv_txfm_sse2.h', # MANUAL
+		# 'x86/quantize_sse2.h', # MANUAL
 		'x86/mem_sse2.h',
 		'x86/transpose_sse2.h'
 	),
 	'sse4_1' : files(
-		'x86/highbd_inv_txfm_sse4.h'
+		# 'x86/highbd_inv_txfm_sse4.h' # MANUAL
 	),
 	'ssse3' : files(
 		# 'x86/convolve_ssse3.h', # MANUAL
-		'x86/inv_txfm_ssse3.h',
-		'x86/quantize_ssse3.h'
+		# 'x86/inv_txfm_ssse3.h', # MANUAL
+		# 'x86/quantize_ssse3.h' # MANUAL
 	),
 	'vsx' : files(
 		'ppc/types_vsx.h',
@@ -354,22 +356,23 @@ dsp_asm_optional_sources = {
 		# 'x86/vpx_high_subpixel_8t_sse2.asm', # MANUAL
 		# 'x86/vpx_high_subpixel_bilinear_sse2.asm', # MANUAL
 		# 'x86/vpx_convolve_copy_sse2.asm', # MANUAL
-		'x86/inv_wht_sse2.asm',
-		'x86/sad4d_sse2.asm',
-		'x86/sad_sse2.asm',
-		'x86/subtract_sse2.asm',
-		'x86/highbd_sad4d_sse2.asm',
-		'x86/highbd_sad_sse2.asm',
-		'x86/ssim_opt_x86_64.asm',
-		'x86/highbd_variance_impl_sse2.asm',
-		'x86/highbd_subpel_variance_impl_sse2.asm'
+		# 'x86/inv_wht_sse2.asm', # MANUAL
+		# 'x86/sad4d_sse2.asm', # MANUAL
+		# 'x86/sad_sse2.asm', # MANUAL
+		# 'x86/subtract_sse2.asm', # MANUAL
+		# 'x86/highbd_sad4d_sse2.asm', # MANUAL
+		# 'x86/highbd_sad_sse2.asm', # MANUAL
+		# 'x86/ssim_opt_x86_64.asm', # MANUAL
+		# 'x86/subpel_variance_sse2.asm', # MANUAL
+		# 'x86/highbd_variance_impl_sse2.asm', # MANUAL
+		# 'x86/highbd_subpel_variance_impl_sse2.asm' # MANUAL
 	),
 	'ssse3' : files(
 		'x86/intrapred_ssse3.asm',
 		# 'x86/vpx_subpixel_8t_ssse3.asm', # MANUAL
 		# 'x86/vpx_subpixel_bilinear_ssse3.asm', # MANUAL
 		# 'x86/fwd_txfm_ssse3_x86_64.asm', # MANUAL
-		'x86/avg_ssse3_x86_64.asm'
+		# 'x86/avg_ssse3_x86_64.asm' # MANUAL
 	),
 }
 
@@ -474,7 +477,7 @@ if not features.get('postproc', false) and not features.get('vp9_postproc', fals
 	}
 endif
 
-dsp_asm_optional_sources += {
+dsp_asm_optional_sources += { # MANUAL
 	'neon_asm' : asm_transformer.process(
 		files(
 			'arm/intrapred_neon_asm.asm',
@@ -482,7 +485,7 @@ dsp_asm_optional_sources += {
 	)
 }
 
-if features.get('vp9', false)
+if features.get('vp9', false) # MANUAL
 	# interpolation filters
 
 	dsp_sources += files(
@@ -750,6 +753,390 @@ if features.get('vp9_encoder', false)
 			'lsx' : dsp_optional_sources['lsx'] + files(
 				# loop filters
 				'loongarch/fwd_dct32x32_lsx.c',
+			)
+		}
+	endif
+endif
+
+# inverse transform
+if features.get('vp9', true) # MANUAL
+	dsp_sources += files(
+		'inv_txfm.c',
+	)
+
+	dsp_headers_sources += files(
+		'inv_txfm.h',
+	)
+
+	dsp_headers_optional_sources += {
+		'sse2' : dsp_headers_optional_sources['sse2'] + files(
+			'x86/inv_txfm_sse2.h',
+		),
+		'ssse3' : dsp_headers_optional_sources['ssse3'] + files(
+			'x86/inv_txfm_ssse3.h',
+		),
+	}
+
+	dsp_optional_sources += {
+		'sse2' : dsp_optional_sources['sse2'] + files(
+			'x86/inv_txfm_sse2.c',
+		),
+		'ssse3' : dsp_optional_sources['ssse3'] +  files(
+			'x86/inv_txfm_ssse3.c'.
+		)
+		'neon' : dsp_optional_sources['neon'] + files(
+			'arm/fdct4x4_neon.c',
+			'arm/fdct8x8_neon.c',
+			'arm/fdct16x16_neon.c',
+			'arm/fdct32x32_neon.c',
+			'arm/fdct_partial_neon.c',
+		),
+		'vsx' : dsp_optional_sources['vsx'] + files(
+			'ppc/inv_txfm_vsx.c',
+		)
+	}
+
+	dsp_asm_optional_sources += {
+		'sse2' : dsp_asm_optional_sources['sse2'] + files(
+			'x86/inv_wht_sse2.asm',
+		),
+	}
+
+	if features.get('neon_asm', false)
+		dsp_sources += transformer.process(
+			files(
+				'arm/save_reg_neon.asm',
+			)
+		)
+	endif
+
+	if not features.get('vp9_highbitdepth', false)
+		dsp_headers_optional_sources += {
+			'msa' : dsp_headers_optional_sources['msa'] + files(
+				'mips/inv_txfm_msa.h',
+			),
+			'dspr2' : dsp_headers_optional_sources['dspr2'] + files(
+				'mips/inv_txfm_dspr2.h',
+			)
+		}
+
+		dsp_optional_sources += {
+			'msa' : dsp_optional_sources['msa'] + files(
+				'mips/idct4x4_msa.c',
+				'mips/idct8x8_msa.c',
+				'mips/idct16x16_msa.c',
+				'mips/idct32x32_msa.c',
+			)
+			'dspr2' : dsp_optional_sources['dspr2'] + files(
+				'mips/itrans4_dspr2.c',
+				'mips/itrans8_dspr2.c',
+				'mips/itrans16_dspr2.c',
+				'mips/itrans32_dspr2.c',
+				'mips/itrans32_cols_dspr2.c',
+			),
+			'lsx' : dsp_optional_sources['lsx'] + files(
+				'loongarch/idct32x32_lsx.c',
+			)
+		}
+	else
+		dsp_headers_optional_sources += {
+			'neon' : dsp_headers_optional_sources['neon'] + files(
+				'arm/highbd_idct_neon.h',
+			),
+			'sse2' : dsp_headers_optional_sources['sse2'] + files(
+				'x86/highbd_inv_txfm_sse2.h',
+			),
+			'sse4_1' : dsp_headers_optional_sources['sse4_1'] + files(
+				'x86/highbd_inv_txfm_sse4.h',
+			)
+		}
+
+		dsp_optional_sources += {
+			'neon' : dsp_optional_sources['neon'] + files(
+				'arm/highbd_idct4x4_add_neon.c',
+				'arm/highbd_idct8x8_add_neon.c',
+				'arm/highbd_idct16x16_add_neon.c',
+				'arm/highbd_idct32x32_add_neon.c',
+				'arm/highbd_idct32x32_34_add_neon.c',
+				'arm/highbd_idct32x32_135_add_neon.c',
+				'arm/highbd_idct32x32_1024_add_neon.c',
+			)
+			'sse2' : dsp_optional_sources['sse2'] + files(
+				'x86/highbd_idct4x4_add_sse2.c',
+				'x86/highbd_idct8x8_add_sse2.c',
+				'x86/highbd_idct16x16_add_sse2.c',
+				'x86/highbd_idct32x32_add_sse2.c',
+			),
+			'lsx' : dsp_optional_sources['lsx'] + files(
+				'x86/highbd_idct4x4_add_sse4.c',
+				'x86/highbd_idct8x8_add_sse4.c',
+				'x86/highbd_idct16x16_add_sse4.c',
+				'x86/highbd_idct32x32_add_sse4.c',
+			)
+		}
+	endif
+
+	if features.get('neon_asm', false)
+		dsp_sources += transformer.process(
+			files(
+				'arm/idct_neon.asm',
+				'arm/idct4x4_1_add_neon.asm',
+				'arm/idct4x4_add_neon.asm',
+			)
+		)
+	else
+		dsp_optional_sources += {
+			'neon' : dsp_optional_sources['neon'] + files(
+				'arm/idct4x4_1_add_neon.c',
+				'arm/idct4x4_add_neon.c',
+			)
+		}
+	endif
+
+	dsp_optional_sources += {
+		'neon' : dsp_optional_sources['neon'] + files(
+			'arm/idct8x8_1_add_neon.c',
+			'arm/idct8x8_add_neon.c',
+			'arm/idct16x16_1_add_neon.c',
+			'arm/idct16x16_add_neon.c',
+			'arm/idct32x32_1_add_neon.c',
+			'arm/idct32x32_34_add_neon.c',
+			'arm/idct32x32_135_add_neon.c',
+			'arm/idct32x32_add_neon.c',
+		)
+	}
+endif
+
+# quantization
+if features.get('vp9_encoder', false) # MANUAL
+	dsp_sources += files(
+		'quantize.c',
+		# avg
+		'avg.c',
+	)
+
+	dsp_headers_sources += files(
+		'quantize.h',
+	)
+
+	dsp_optional_sources += {
+		'sse2' : dsp_optional_sources['sse2'] + files(
+			'x86/quantize_sse2.c',
+			# avg
+			'x86/avg_intrin_sse2.c',
+		),
+		'ssse3' : dsp_optional_sources['ssse3'] + files(
+			'x86/quantize_ssse3.c',
+		),
+		'avx' : dsp_optional_sources['avx'] + files(
+			'x86/quantize_avx.c',
+			# avg
+			'x86/avg_intrin_avx2.c',
+		),
+		'avx2' : dsp_optional_sources['avx'] + files(
+			'x86/quantize_avx2.c',
+		),
+		'neon' : dsp_optional_sources['neon'] + files(
+			'arm/quantize_neon.c',
+			# avg
+			'arm/avg_neon.c',
+			'arm/hadamard_neon.c',
+		),
+		'vsx' : dsp_optional_sources['vsx'] + files(
+			'ppc/quantize_vsx.c',
+			# avg
+			'ppc/hadamard_vsx.c',
+		),
+		'lsx' : dsp_optional_sources['lsx'] + files(
+			'loongarch/quantize_lsx.c',
+			# avg
+			'loongarch/avg_lsx.c',
+		),
+		'msa' : dsp_optional_sources['msa'] + files(
+			# avg
+			'mips/avg_msa.c',
+		),
+	}
+
+	dsp_headers_optional_sources += {
+		'sse2' : dsp_headers_optional_sources['sse2'] + files(
+			'x86/quantize_sse2.h',
+		),
+		'ssse3' : dsp_headers_optional_sources['ssse3'] + files(
+			'x86/quantize_ssse3.h',
+		)
+	}
+
+	if features.get('vp9_highbitdepth', false)
+		dsp_optional_sources += {
+			'sse2' : dsp_optional_sources['sse2'] + files(
+				'x86/highbd_quantize_intrin_sse2.c',
+			),
+			'avx2' : dsp_optional_sources['avx'] + files(
+				'x86/highbd_quantize_intrin_avx2.c',
+			),
+			'neon' : dsp_optional_sources['neon'] + files(
+				'arm/highbd_quantize_neon.c',
+			),
+		}
+	endif
+
+	# avg
+	if features.get('x86_64', false)
+		dsp_asm_optional_sources += {
+			'ssse3' : dsp_asm_optional_sources['ssse3'] + files(
+				'x86/avg_ssse3_x86_64.asm',
+			)
+		}
+	endif
+endif
+
+if features.get('encoders', false) # MANUAL
+	dsp_sources += files(
+		'sad.c',
+		'subtract.c',
+		'sum_squares.c',
+	)
+
+	dsp_optional_sources += {
+		'neon' : dsp_optional_sources['neon'] + files(
+			'arm/sum_squares_neon.c',
+			'arm/sad4d_neon.c',
+			'arm/sad_neon.c',
+			'arm/subtract_neon.c',
+		),
+		'sse2' : dsp_optional_sources['sse2'] + files(
+			'x86/sum_squares_sse2.c',
+		),
+		'msa' : dsp_optional_sources['msa'] + files(
+			'mips/sum_squares_msa.c',
+			'mips/sad_msa.c',
+			'mips/subtract_msa.c',
+		),
+		'lsx' : dsp_optional_sources['lsx'] + files(
+			'loongarch/sad_lsx.c',
+			'loongarch/subtract_lsx.c',
+		),
+		'mmi' : dsp_optional_sources['mmi'] + files(
+			'mips/sad_mmi.c',
+			'mips/subtract_mmi.c',
+		),
+		'avx2' : dsp_optional_sources['avx2'] + files(
+			'x86/sad4d_avx2.c',
+			'x86/sad_avx2.c',
+			'x86/subtract_avx2.c',
+		),
+		'avx512' : dsp_optional_sources['avx512'] + files(
+			'x86/sad4d_avx512.c',
+		),
+		'vsx' : dsp_optional_sources['vsx'] + files(
+			'ppc/sad_vsx.c',
+			'ppc/subtract_vsx.c',
+		),
+	}
+
+	dsp_asm_optional_sources += {
+		'sse2' : dsp_asm_optional_sources['sse2'] + files(
+			'x86/sad4d_sse2.asm',
+			'x86/sad_sse2.asm',
+			'x86/subtract_sse2.asm',
+		)
+	}
+
+	if features.get('vp9_highbitdepth', false)
+		dsp_asm_optional_sources += {
+			'sse2' : dsp_asm_optional_sources['sse2'] + files(
+				'x86/highbd_sad4d_sse2.asm',
+				'x86/highbd_sad_sse2.asm',
+			)
+		}
+
+		dsp_optional_sources += {
+			'avx2' : dsp_optional_sources['avx2'] + files(
+				'x86/highbd_sad4d_avx2.c',
+				'x86/highbd_sad_avx2.c',
+			),
+			'neon' : dsp_optional_sources['neon'] + files(
+				'arm/highbd_sad_neon.c',
+			)
+		}
+	endif
+endif
+
+
+if not features.get('encoders', false) and not features.get('postproc', false) and not features.get('vp9_postproc', false) # MANUAL
+	dsp_sources += files(
+		'variance.c',
+	)
+
+	dsp_headers_sources += files(
+		'variance.h',
+	)
+
+	dsp_optional_sources += {
+		'neon' : dsp_optional_sources['neon'] + files(
+			'arm/avg_pred_neon.c',
+			'arm/subpel_variance_neon.c',
+			'arm/variance_neon.c',
+		),
+		'msa' : dsp_optional_sources['msa'] + files(
+			'mips/variance_msa.c',
+			'mips/sub_pixel_variance_msa.c',
+		),
+		'lsx' : dsp_optional_sources['lsx'] + files(
+			'loongarch/variance_lsx.c',
+			'loongarch/sub_pixel_variance_lsx.c',
+			'loongarch/avg_pred_lsx.c',
+		),
+		'mmi' : dsp_optional_sources['mmi'] + files(
+			'mips/variance_mmi.c',
+		),
+		'sse2' : dsp_optional_sources['sse2'] + files(
+			'x86/avg_pred_sse2.c',
+			'x86/variance_sse2.c', # Contains SSE2 and SSSE3
+			'x86/variance_avx2.c',
+		),
+		'vsx' : dsp_optional_sources['vsx'] + files(
+			'ppc/variance_vsx.c',
+		),
+		
+	}
+
+	dsp_optional_headers_sources += {
+		'lsx' : dsp_optional_headers_sources['lsx'] + files(
+			'loongarch/variance_lsx.h',
+		)
+	}
+
+	if features.get('x86_64', false)
+		dsp_asm_optional_sources += {
+			'sse2' : dsp_asm_optional_sources['sse2'] + files(
+				'x86/ssim_opt_x86_64.asm',
+			),
+		}
+	endif
+
+	# Contains SSE2 and SSSE3
+	dsp_asm_optional_sources += {
+		'sse2' : dsp_asm_optional_sources['sse2'] + files(
+			'x86/subpel_variance_sse2.asm',
+		)
+	}
+
+	if features.get('vp9_highbitdepth', false)
+		dsp_asm_optional_sources += {
+			'sse2' : dsp_asm_optional_sources['sse2'] + files(
+				'x86/highbd_variance_impl_sse2.asm',
+				'x86/highbd_subpel_variance_impl_sse2.asm',
+			)
+		}
+
+		dsp_optional_sources += {
+			'sse2' : dsp_optional_sources['sse2'] + files(
+				'x86/highbd_variance_sse2.c',
+			),
+			'neon' : dsp_optional_sources['neon'] + files(
+				'arm/highbd_variance_neon.c',
 			)
 		}
 	endif
