@@ -181,6 +181,9 @@ paths = {
     'vpx_scale': [
         'vpx_scale/vpx_scale.mk',
     ],
+    'vpx_mem': [
+        'vpx_mem/vpx_mem.mk',
+    ],
 }
 
 if __name__=='__main__':
