@@ -471,3 +471,15 @@ vp8_rtcd_h = custom_target(
 
 codec_srcs += vp8_rtcd_h
 codec_headers += vp8_rtcd_defs
+
+if features.get('vp8_encoder', false)
+	codec_exports += files(
+		'exports_enc',
+	)
+endif
+
+if features.get('vp8_decoder', false)
+	codec_exports += files(
+		'exports_dec',
+	)
+endif

@@ -83,3 +83,19 @@ foreach comp_name, comp_sources : optional_sources
 endforeach
 
 codec_headers += api_doc_headers_sources
+
+codec_exports += files(
+	'exports_com'
+)
+
+if features.get('encoders', false)
+	codec_exports += files(
+		'exports_enc',
+	)
+endif
+
+if features.get('decoders', false)
+	codec_exports += files(
+		'exports_dec',
+	)
+endif

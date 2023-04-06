@@ -512,3 +512,15 @@ vp9_rtcd_h = custom_target(
 
 codec_srcs += vp9_rtcd_h
 codec_headers += vp9_rtcd_defs
+
+if features.get('vp9_encoder', false)
+	codec_exports += files(
+		'exports_enc',
+	)
+endif
+
+if features.get('vp9_decoder', false)
+	codec_exports += files(
+		'exports_dec',
+	)
+endif

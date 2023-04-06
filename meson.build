@@ -1564,6 +1564,7 @@ extra_libs += c.find_library('m', required: false)
 
 codec_srcs = []
 codec_headers = []
+codec_exports = []
 
 #
 # Rule to make assembler configuration file from C configuration file
@@ -1636,6 +1637,43 @@ subdir('vpx_util')
 subdir('vp8')
 subdir('vp9')
 
+gen_def_exe = find_program('meson/gen_def.py', required: true)
+
+gen_def_cmd = [
+	gen_def_exe,
+	'--name=vpx',
+	'--out=@OUTPUT@'
+]
+
+if tgt_os != 'windows' and c.symbols_have_underscore_prefix()
+	gen_def_cmd += ['--underscore']
+endif
+
+if ['darwin', 'iphonesimulator'].contains(tgt_os)
+	vpx_def = custom_target(
+		'libvpx.syms',
+		command: gen_def_cmd + ['--format=mac', '@INPUT@'],
+		input: codec_exports,
+		output: 'libvpx.syms',
+	)
+	link_args += c.get_supported_link_arguments('-Wl,-exported_symbols_list,@0@'.format(vpx_def.full_path()))
+elif tgt_os == 'windows'
+	vpx_def = custom_target(
+		'libvpx.def',
+		command: gen_def_cmd + ['--format=win', '@INPUT@'],
+		input: codec_exports,
+		output: 'libvpx.def',
+	)
+else
+	vpx_def = custom_target(
+		'libvpx.ver',
+		command: gen_def_cmd + ['--format=linux', '@INPUT@'],
+		input: codec_exports,
+		output: 'libvpx.ver',
+	)
+	link_args += c.get_supported_link_arguments('-Wl,--version-script,@0@'.format(vpx_def.full_path()))
+endif
+
 soversion = '8.0.0'
 
 if features.get('static', false) and features.get('shared', false)
@@ -1643,28 +1681,23 @@ if features.get('static', false) and features.get('shared', false)
 		'vpx',
 		codec_srcs,
 		c_args: c_args,
+		c_link_args: link_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
 		version: soversion,
-		install: true,
-	)
-elif features.get('shared', false)
-	libvpx = shared_library(
-		'vpx',
-		codec_srcs,
-		c_args: c_args,
-		extra_files: codec_headers,
-		dependencies: extra_libs,
-		version: soversion,
+		vs_module_defs: vpx_def,
 		install: true,
 	)
 else
-	libvpx = static_library(
+	libvpx = library(
 		'vpx',
 		codec_srcs,
 		c_args: c_args,
+		link_args: link_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
+		version: soversion,
+		vs_module_defs: vpx_def,
 		install: true,
 	)
 endif
