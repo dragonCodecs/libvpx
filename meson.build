@@ -1294,6 +1294,7 @@ if tgt_cc == 'msvs'
 		features.set('solution', true)
 	endif
 	features.set('INLINE', '__inline')
+	c_args += ['-D_CRT_SECURE_NO_WARNINGS', '-D_CRT_SECURE_NO_DEPRECATE']
 endif
 
 # Other toolchain specific defaults
