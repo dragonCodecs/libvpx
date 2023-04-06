@@ -1215,7 +1215,7 @@ if features.get('gcc', false)
 	c_args += c.get_supported_arguments('-Wundef')
 	c_args += c.get_supported_arguments('-Wframe-larger-than=52000')
 
-	if (features.get('mips') or features.get('INLINE', '') == '') and features.get('extra_warnings', false)
+	if (features.get('mips', false) or features.get('INLINE', '') == '') and features.get('extra_warnings', false)
 		c_args += c.get_supported_arguments('-Wno-unused-function')
 		cpp_args += cpp.get_supported_arguments('-Wno-unused-function')
 	endif
