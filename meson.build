@@ -590,13 +590,13 @@ if features.get(tgt_isa, true) # soft_enabled
 	features.set(tgt_isa, true)
 endif
 if c.get_argument_syntax() == 'msvc'
-	tgt_cc == 'msvs' # Upstream uses "vs@0@".format(vs_major_version_number)
+	tgt_cc = 'msvs' # Upstream uses "vs@0@".format(vs_major_version_number)
 elif c.get_id() == 'icc'
-	tgt_cc == 'icc'
+	tgt_cc = 'icc'
 elif ['gcc', 'clang'].contains(c.get_id())
-	tgt_cc == 'gcc'
+	tgt_cc = 'gcc'
 else
-	tgt_cc == 'gnu'
+	tgt_cc = 'gnu'
 endif
 features.set(tgt_cc, true)
 
