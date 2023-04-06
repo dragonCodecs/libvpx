@@ -44,7 +44,7 @@ def make_to_meson(target: str, paths: list[str]):
             source_type = None
 
             for l in f.readlines():
-                l = l.strip().rsplit('#', 1)[0]
+                l = l.strip().split('#', 1)[0].strip()
 
                 if accumulate:
                     ofiles = l
@@ -58,14 +58,15 @@ def make_to_meson(target: str, paths: list[str]):
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = option.group(2)
                     ofiles = option.group(3)
+                    print(ofiles)
                     source_type = PurePosixPath(option.group(3)).suffix.strip('.')
-                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+(.+)\$\(ASM\)$', l):
+                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+(.+)\$\(ASM\)\s*', l):
                     # remove the component suffix and patch the extension in
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = ''
                     ofiles = f'{option.group(2)}.asm'
                     source_type = 'c'
-                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+(.+)\$\(ASM\)$', l):
+                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+(.+)\$\(ASM\)\s*', l):
                     # remove the component suffix and patch the extension in
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = option.group(2)
