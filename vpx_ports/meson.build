@@ -39,10 +39,16 @@ ports_asm_optional_sources = {
 	),
 }
 
+ports_headers_sources += files( # MANUAL
+	'emmintrin_compat.h',
+	'mem_ops.h',
+	'mem_ops_aligned.h',
+	'vpx_once.h',
+)
+
 if features.get('x86', false) # MANUAL
 	ports_optional_sources += {
-		'mmx' : ports_optional_sources['mmx'] +
-		 files(
+		'mmx' : ports_optional_sources['mmx'] + files(
 			'emms_mmx.c'
 		),
 	}
@@ -51,36 +57,38 @@ endif
 if features.get('x86_64', false) # MANUAL
 	# Visual Studio x64 does not support the _mm_empty() intrinsic.
 	ports_asm_optional_sources += {
-		'mmx' : ports_asm_optional_sources['mmx'] +
-		 files(
+		'mmx' : ports_asm_optional_sources['mmx'] + files(
 			'emms_mmx.asm'
 		),
 	}
 
-	if features.get('msvs', true)
-		ports_asm_optional_sources += {
-			'msvs' : ports_asm_optional_sources['msvs'] +files(
-				'float_control_word.asm'
-			),
-		}
-	endif
+	ports_asm_optional_sources += {
+		'msvs' : ports_asm_optional_sources['msvs'] +files(
+			'float_control_word.asm'
+		),
+	}
 endif
 
-if features.get('x86', false) or features.get('x86_64', false)
-	ports_asm_sources += files(
+ports_asm_optional_sources += { # MANUAL
+	'x86': files(
 		'x86_abi_support.asm'
-	)
+	),
+	'x86_64': files(
+		'x86_abi_support.asm'
+	),
+}
 
-	ports_headers_sources += files(
+ports_headers_optional_sources += { # MANUAL
+	'x86': files(
 		'x86.h'
-	)
-endif
-
-if features.get('mips', false)
-	ports_headers_optional_sources += files(
+	),
+	'x86_64': files(
+		'x86.h'
+	),
+	'mips': files(
 		'asmdefs_mmi.h'
 	)
-endif
+}
 
 #### --- END GENERATED --- ####
 

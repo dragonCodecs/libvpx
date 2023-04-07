@@ -297,7 +297,7 @@ dsp_headers_optional_sources = {
 		# 'loongarch/loopfilter_lsx.h', # MANUAL
 		'loongarch/txfm_macros_lsx.h',
 		# 'loongarch/fwd_txfm_lsx.h', # MANUAL
-		# 'loongarch/variance_lsx.h', # MANUAl
+		# 'loongarch/variance_lsx.h', # MANUAL
 		'loongarch/bitdepth_conversion_lsx.h'
 	),
 	'msa' : files(
@@ -439,7 +439,7 @@ if features.get('vp9_highbitdepth', false) # MANUAL
 endif
 
 # intra predictions
-if not features.get('postproc', false) and not features.get('vp9_postproc', false) # MANUAL
+if not features.get('postproc', false) or not features.get('vp9_postproc', false) # MANUAL
 	dsp_sources += files(
 		'add_noise.c',
 		'deblock.c',
@@ -470,7 +470,7 @@ if not features.get('postproc', false) and not features.get('vp9_postproc', fals
 			'x86/add_noise_sse2.asm',
 			'x86/deblock_sse2.asm',
 		),
-		'ssse3': files(
+		'ssse3' : dsp_asm_optional_sources['ssse3'] + files(
 			'x86/vpx_subpixel_8t_ssse3.asm',
 			'x86/vpx_subpixel_bilinear_ssse3.asm',
 		)
@@ -931,7 +931,7 @@ if features.get('vp9_encoder', false) # MANUAL
 		'avx' : dsp_optional_sources['avx'] + files(
 			'x86/quantize_avx.c',
 		),
-		'avx2' : dsp_optional_sources['avx'] + files(
+		'avx2' : dsp_optional_sources['avx2'] + files(
 			'x86/quantize_avx2.c',
 			# avg
 			'x86/avg_intrin_avx2.c',
@@ -1064,7 +1064,7 @@ if features.get('encoders', false) # MANUAL
 endif
 
 
-if not features.get('encoders', false) and not features.get('postproc', false) and not features.get('vp9_postproc', false) # MANUAL
+if not features.get('encoders', false) or not features.get('postproc', false) or not features.get('vp9_postproc', false) # MANUAL
 	dsp_sources += files(
 		'variance.c',
 	)
@@ -1094,6 +1094,8 @@ if not features.get('encoders', false) and not features.get('postproc', false) a
 		'sse2' : dsp_optional_sources['sse2'] + files(
 			'x86/avg_pred_sse2.c',
 			'x86/variance_sse2.c', # Contains SSE2 and SSSE3
+		),
+		'avx2' : dsp_optional_sources['avx2'] + files(
 			'x86/variance_avx2.c',
 		),
 		'vsx' : dsp_optional_sources['vsx'] + files(
@@ -1102,8 +1104,8 @@ if not features.get('encoders', false) and not features.get('postproc', false) a
 		
 	}
 
-	dsp_optional_headers_sources += {
-		'lsx' : dsp_optional_headers_sources['lsx'] + files(
+	dsp_headers_optional_sources += {
+		'lsx' : dsp_headers_optional_sources['lsx'] + files(
 			'loongarch/variance_lsx.h',
 		)
 	}

@@ -1562,7 +1562,9 @@ rtcd_exe = find_program('build/make/rtcd.pl', required: true)
 
 extra_libs += c.find_library('m', required: false)
 
-codec_srcs = []
+codec_srcs = [
+	vpx_config_c,
+]
 codec_headers = []
 codec_exports = []
 

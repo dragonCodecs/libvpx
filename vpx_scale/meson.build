@@ -41,7 +41,7 @@ foreach comp_name, comp_sources : optional_sources
 			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
 		}
 	else
-		scale_sources += comp_sources
+		codec_srcs += comp_sources
 	endif
 endforeach
 
@@ -56,7 +56,7 @@ foreach comp_name, comp_sources : optional_sources
 			comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
 		}
 	else
-		scale_headers_sources += comp_sources
+		codec_headers += comp_sources
 	endif
 endforeach
 
