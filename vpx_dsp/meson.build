@@ -1167,8 +1167,12 @@ foreach comp_name, comp_sources : optional_sources
 		continue
 	endif
 	if ARCH_EXT_LIST.contains(comp_name)
+		transformed_sources = comp_sources
+		if asm_conversion_exe.found()
+			transformed_sources = asm_transformer.process(comp_sources)
+		endif
 		codec_arch_srcs += {
-			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+			comp_name: codec_arch_srcs.get(comp_name, []) + transformed_sources
 		}
 	else
 		codec_srcs += comp_sources

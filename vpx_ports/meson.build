@@ -92,20 +92,43 @@ ports_headers_optional_sources += { # MANUAL
 
 #### --- END GENERATED --- ####
 
+codec_srcs += ports_sources
 optional_sources = get_variable('ports_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		ports_sources += comp_sources
+	if not features.get(comp_name, false)
+		continue
+	endif
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+		}
+	else
+		codec_srcs += comp_sources
 	endif
 endforeach
 
-codec_srcs += ports_sources
-
-optional_sources = get_variable('ports_headers_optional_sources', {})
+optional_sources = get_variable('ports_asm_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		ports_headers_sources += comp_sources
+	if not features.get(comp_name, false)
+		continue
+	endif
+	if ARCH_EXT_LIST.contains(comp_name)
+		transformed_sources = comp_sources
+		if asm_conversion_exe.found()
+			transformed_sources = asm_transformer.process(comp_sources)
+		endif
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + transformed_sources
+		}
+	else
+		codec_srcs += comp_sources
 	endif
 endforeach
 
 codec_headers += ports_headers_sources
+optional_sources = get_variable('ports_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		codec_headers += comp_sources
+	endif
+endforeach
