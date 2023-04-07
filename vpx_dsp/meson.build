@@ -935,6 +935,8 @@ if features.get('vp9_encoder', false) # MANUAL
 		),
 		'avx2' : dsp_optional_sources['avx'] + files(
 			'x86/quantize_avx2.c',
+			# avg
+			'x86/avg_intrin_avx2.c',
 		),
 		'neon' : dsp_optional_sources['neon'] + files(
 			'arm/quantize_neon.c',
