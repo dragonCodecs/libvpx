@@ -1618,30 +1618,35 @@ codec_arch_libs = []
 config_asm_generator = find_program('meson/transform_config_asm.py', required: true)
 
 if asm_conversion_exe.found()
-	asm_transformer = generator(
+	asm_conversion_cmd = [
 		find_program('meson/stdinout_wrapper.py', required: true),
-		arguments: ['--input', '@INPUT@', '--output', '@OUTPUT'] + asm_conversion_cmd,
+		'--input', '@INPUT@', '--output', '@OUTPUT@'
+	] + asm_conversion_cmd
+	asm_transformer = generator(
+		arguments: asm_conversion_cmd,
 		output: '@0@.@1@'.format('@BASENAME@', as_sfx)
 	)
 endif
 
 if features.get('x86', false) or features.get('x86_64')
-	config_asm = custom_target(
-		'vpx_config.asm',
+	config_asm = configure_file(
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@', '--format=yasm'],
 		input: vpx_config_h,
 		output: 'vpx_config.asm',
 	)
 elif asm_conversion_exe.found()
-	ads_config_asm = custom_target(
-		'vpx_config.adstmp',
+	ads_config_asm = configure_file(
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
 		input: vpx_config_h,
 		output: 'vpx_config.adstmp',
 	)
-	config_asm = asm_transformer.process(ads_config_asm)
+	config_asm = configure_file(
+		command: asm_conversion_cmd,
+		input: ads_config_asm,
+		output: 'vpx_config.asm',
+	)
 else
-	config_asm = custom_target(
+	config_asm = configure_file(
 		'vpx_config.asm',
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
 		input: vpx_config_h,
