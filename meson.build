@@ -914,7 +914,7 @@ elif tgt_isa.startswith('x86')
 			warning('This version of Visual Studio does not support avx512, disabling.....')
 			rtcd_options += ['--disable-avx512']
 			feature = 'avx512'
-			if not feature.get(feature, false) # ! enabled
+			if not features.get(feature, false) # ! enabled
 				if not features.has(feature) # disabled
 					message('\tdisabling @0@'.format(feature))
 				endif
