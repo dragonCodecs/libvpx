@@ -64,7 +64,7 @@ vp9_common_optional_sources = {
 	),
 }
 
-if features.get('vp9_highbitdepth', false) # MANUAL
+if not features.get('vp9_highbitdepth', false) # MANUAL
 	vp9_common_optional_sources += {
 		'msa': vp9_common_optional_sources['msa'] + files(
 			'common/mips/msa/vp9_idct4x4_msa.c',
