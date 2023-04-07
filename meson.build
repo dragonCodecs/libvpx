@@ -197,6 +197,7 @@ CONFIG_LIST = [
 	'multi_res_encoding',
 	'temporal_denoising',
 	'vp9_temporal_denoising',
+	'consistent_recode',
 	'coefficient_range_checking',
 	'vp9_highbitdepth',
 	'better_hw_compatibility',
