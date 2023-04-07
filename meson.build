@@ -9,7 +9,6 @@ project(
 		# Uncomment when Meson can handle this one for MSVC.
 		# 'cpp_std=gnu++11',
 		'warning_level=2',
-		'b_bitcode=true',
 	]
 )
 
@@ -1567,6 +1566,50 @@ codec_srcs = []
 codec_headers = []
 codec_exports = []
 
+# What no one told me, and is veery tucked into the Makefiles,
+# is that Google's relying on regexp'd per-file architecture flags.
+# Best we can do here is simulate them and make libraries that'll be
+# link_whole'd into the final binary.
+if tgt_cc == 'msvs'
+	arch_flags = {
+		'mmx': [],
+		'sse2': [],
+		'sse3': [],
+		'ssse3': [],
+		'sse4_1': [],
+		'avx': c.get_supported_arguments('-march:avx'),
+		'avx2': c.get_supported_arguments('-march:avx2'),
+		'avx512': c.get_supported_arguments('-march:avx512'),
+	}
+else
+	arch_flags = {
+		# x86[_64]
+		'mmx': '-mmmx',
+		'sse2': '-msse2',
+		'sse3': '-msse3',
+		'ssse3': '-mssse3',
+		'sse4_1': '-msse4.1',
+		'avx': '-mavx',
+		'avx2': '-mavx2',
+		'avx512': '-mavx512f -mavx512cd -mavx512bw -mavx512dq -mavx512vl',
+
+		# POWER
+		'vsx' : '-maltivec -mvsx',
+
+		# MIPS
+		'msa': '-mmsa',
+
+		# LOONGARCH
+		'lsx': '-mlsx',
+		'lasx': '-mlasx',
+	}
+endif
+
+codec_arch_prereqs = []
+codec_arch_srcs = {}
+codec_arch_headers = {}
+codec_arch_libs = []
+
 #
 # Rule to make assembler configuration file from C configuration file
 #
@@ -1651,31 +1694,40 @@ if tgt_os != 'windows' and c.symbols_have_underscore_prefix()
 endif
 
 if ['darwin', 'iphonesimulator'].contains(tgt_os)
-	vpx_def = custom_target(
-		'libvpx.syms',
+	vpx_def_name = 'libvpx.syms'
+	vpx_def = configure_file(
 		command: gen_def_cmd + ['--format=mac', '@INPUT@'],
 		input: codec_exports,
-		output: 'libvpx.syms',
+		output: vpx_def_name,
 	)
-	link_args += c.get_supported_link_arguments('-Wl,-exported_symbols_list,@0@'.format(vpx_def.full_path()))
+	link_args += ['-Wl,-exported_symbols_list,@0@'.format(meson.current_build_dir() / vpx_def_name)]
 elif tgt_os == 'windows'
-	vpx_def = custom_target(
-		'libvpx.def',
+	vpx_def = configure_file(
 		command: gen_def_cmd + ['--format=win', '@INPUT@'],
 		input: codec_exports,
 		output: 'libvpx.def',
 	)
 else
-	vpx_def = custom_target(
-		'libvpx.ver',
+	vpx_def_name = 'libvpx.ver'
+	vpx_def = configure_file(
 		command: gen_def_cmd + ['--format=linux', '@INPUT@'],
 		input: codec_exports,
-		output: 'libvpx.ver',
+		output: vpx_def_name,
 	)
-	link_args += c.get_supported_link_arguments('-Wl,--version-script,@0@'.format(vpx_def.full_path()))
+	link_args += ['-Wl,--version-script,@0@'.format(meson.current_build_dir() / vpx_def_name)]
 endif
 
 soversion = '8.0.0'
+
+foreach arch, srcs : codec_arch_srcs
+	codec_arch_libs += static_library(
+		'vpx-@0@'.format(arch),
+		codec_arch_prereqs + srcs,
+		extra_files: codec_arch_headers.get(comp_name, []),
+		c_args: c_args + arch_flags.get(arch, []),
+		dependencies: extra_libs,
+	)
+endforeach
 
 if features.get('static', false) and features.get('shared', false)
 	libvpx = both_libraries(
@@ -1685,6 +1737,7 @@ if features.get('static', false) and features.get('shared', false)
 		c_link_args: link_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
+		link_whole: codec_arch_libs,
 		version: soversion,
 		vs_module_defs: vpx_def,
 		install: true,
@@ -1697,6 +1750,7 @@ else
 		link_args: link_args,
 		extra_files: codec_headers,
 		dependencies: extra_libs,
+		link_whole: codec_arch_libs,
 		version: soversion,
 		vs_module_defs: vpx_def,
 		install: true,

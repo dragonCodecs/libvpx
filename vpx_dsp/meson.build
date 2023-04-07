@@ -930,8 +930,6 @@ if features.get('vp9_encoder', false) # MANUAL
 		),
 		'avx' : dsp_optional_sources['avx'] + files(
 			'x86/quantize_avx.c',
-			# avg
-			'x86/avg_intrin_avx2.c',
 		),
 		'avx2' : dsp_optional_sources['avx'] + files(
 			'x86/quantize_avx2.c',
@@ -1146,32 +1144,49 @@ endif
 
 #### --- END GENERATED --- ####
 
+codec_srcs += dsp_sources
 optional_sources = get_variable('dsp_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		dsp_sources += comp_sources
+	if not features.get(comp_name, false)
+		continue
+	endif
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+		}
+	else
+		codec_srcs += comp_sources
 	endif
 endforeach
-
-codec_srcs += dsp_sources
 
 optional_sources = get_variable('dsp_asm_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		dsp_sources += comp_sources
+	if not features.get(comp_name, false)
+		continue
 	endif
-endforeach
-
-codec_srcs += dsp_sources
-
-optional_sources = get_variable('dsp_headers_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		dsp_headers_sources += comp_sources
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+		}
+	else
+		codec_srcs += comp_sources
 	endif
 endforeach
 
 codec_headers += dsp_headers_sources
+optional_sources = get_variable('dsp_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if not features.get(comp_name, false)
+		continue
+	endif
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+		}
+	else
+		codec_headers += comp_sources
+	endif
+endforeach
 
 vpx_dsp_rtcd_defs = files(
 	'vpx_dsp_rtcd_defs.pl',
@@ -1186,4 +1201,5 @@ vpx_dsp_rtcd_h = custom_target(
 )
 
 codec_srcs += vpx_dsp_rtcd_h
+codec_arch_prereqs += vpx_dsp_rtcd_h
 codec_headers += vpx_dsp_rtcd_defs

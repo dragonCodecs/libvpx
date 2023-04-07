@@ -30,23 +30,35 @@ scale_headers_optional_sources = {
 
 #### --- END GENERATED --- ####
 
+codec_srcs += scale_sources
 optional_sources = get_variable('scale_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
+	if not features.get(comp_name, false)
+		continue
+	endif
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+		}
+	else
 		scale_sources += comp_sources
 	endif
 endforeach
 
-codec_srcs += scale_sources
-
+codec_headers += scale_headers_sources
 optional_sources = get_variable('scale_headers_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
+	if not features.get(comp_name, false)
+		continue
+	endif
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_headers += {
+			comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
+		}
+	else
 		scale_headers_sources += comp_sources
 	endif
 endforeach
-
-codec_headers += scale_headers_sources
 
 vpx_scale_rtcd_defs = files(
 	'vpx_scale_rtcd.pl',
@@ -61,4 +73,5 @@ vpx_scale_rtcd_h = custom_target(
 )
 
 codec_srcs += vpx_scale_rtcd_h
+codec_arch_prereqs += vpx_scale_rtcd_h
 codec_headers += vpx_scale_rtcd_defs

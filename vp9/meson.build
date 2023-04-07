@@ -428,74 +428,114 @@ endif
 
 #### --- END GENERATED --- ####
 
+codec_srcs += vp9_common_sources
 optional_sources = get_variable('vp9_common_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_common_sources += comp_sources
+	if not features.get(comp_name, false)
+		continue
 	endif
-endforeach
-
-codec_srcs += vp9_common_sources
-
-optional_sources = get_variable('vp9_common_headers_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_common_headers_sources += comp_sources
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_srcs += {
+			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+		}
+	else
+		codec_srcs += comp_sources
 	endif
 endforeach
 
 codec_headers += vp9_common_headers_sources
-
-optional_sources = get_variable('vp9_cx_optional_sources', {})
+optional_sources = get_variable('vp9_common_headers_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_cx_sources += comp_sources
+	if not features.get(comp_name, false)
+		continue
 	endif
-endforeach
-
-optional_sources = get_variable('vp9_cx_asm_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_cx_sources += comp_sources
-	endif
-endforeach
-
-optional_sources = get_variable('vp9_cx_headers_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_cx_headers_sources += comp_sources
-	endif
-endforeach
-
-optional_sources = get_variable('vp9_dx_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_dx_sources += comp_sources
-	endif
-endforeach
-
-optional_sources = get_variable('vp9_dx_asm_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_dx_sources += comp_sources
-	endif
-endforeach
-
-optional_sources = get_variable('vp9_dx_headers_optional_sources', {})
-foreach comp_name, comp_sources : optional_sources
-	if features.get(comp_name, false)
-		vp9_dx_headers_sources += comp_sources
+	if ARCH_EXT_LIST.contains(comp_name)
+		codec_arch_headers += {
+			comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
+		}
+	else
+		codec_headers += comp_sources
 	endif
 endforeach
 
 if features.get('vp9_encoder', false)
 	codec_srcs += vp9_cx_sources
 	codec_headers += vp9_cx_headers_sources
+
+	optional_sources = get_variable('vp9_cx_optional_sources', {})
+	foreach comp_name, comp_sources : optional_sources
+		if not features.get(comp_name, false)
+			continue
+		endif
+		if ARCH_EXT_LIST.contains(comp_name)
+			codec_arch_srcs += {
+				comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+			}
+		else
+			codec_srcs += comp_sources
+		endif
+	endforeach
+
+	optional_sources = get_variable('vp9_cx_asm_optional_sources', {})
+	foreach comp_name, comp_sources : optional_sources
+		if features.get(comp_name, false)
+			codec_srcs += comp_sources
+		endif
+	endforeach
+
+	optional_sources = get_variable('vp9_cx_headers_optional_sources', {})
+	foreach comp_name, comp_sources : optional_sources
+		if not features.get(comp_name, false)
+			continue
+		endif
+		if ARCH_EXT_LIST.contains(comp_name)
+			codec_arch_headers += {
+				comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
+			}
+		else
+			codec_headers += comp_sources
+		endif
+	endforeach
 endif
 
-if features.get('vp9_decoder', false)
+if features.get('vp9_encoder', false)
 	codec_srcs += vp9_dx_sources
 	codec_headers += vp9_dx_headers_sources
+
+	optional_sources = get_variable('vp9_dx_optional_sources', {})
+	foreach comp_name, comp_sources : optional_sources
+		if not features.get(comp_name, false)
+			continue
+		endif
+		if ARCH_EXT_LIST.contains(comp_name)
+			codec_arch_srcs += {
+				comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
+			}
+		else
+			codec_srcs += comp_sources
+		endif
+	endforeach
+
+	optional_sources = get_variable('vp9_dx_asm_optional_sources', {})
+	foreach comp_name, comp_sources : optional_sources
+		if features.get(comp_name, false)
+			codec_srcs += comp_sources
+		endif
+	endforeach
+
+	optional_sources = get_variable('vp9_dx_headers_optional_sources', {})
+	foreach comp_name, comp_sources : optional_sources
+		if not features.get(comp_name, false)
+			continue
+		endif
+		if ARCH_EXT_LIST.contains(comp_name)
+			codec_arch_headers += {
+				comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
+			}
+		else
+			codec_headers += comp_sources
+		endif
+	endforeach
 endif
 
 vp9_rtcd_defs = files(
@@ -504,13 +544,14 @@ vp9_rtcd_defs = files(
 
 vp9_rtcd_h = custom_target(
 	'vp9_rtcd.h',
-	command: rtcd_h_template + ['--sym=@0@'.format('vp8_rtcd'), '@INPUT1@'],
+	command: rtcd_h_template + ['--sym=@0@'.format('vp9_rtcd'), '@INPUT1@'],
 	input: [config_mk, vp9_rtcd_defs[0]],
 	output: 'vp9_rtcd.h',
 	capture: true,
 )
 
 codec_srcs += vp9_rtcd_h
+codec_arch_prereqs += vp9_rtcd_h
 codec_headers += vp9_rtcd_defs
 
 if features.get('vp9_encoder', false)
