@@ -76,7 +76,8 @@ endif
 features.set('install_bins', true)
 features.set('install_libs', true)
 
-features.set('static', true)
+features.set('static', get_option('default_library') != 'shared')
+features.set('shared', get_option('default_library') != 'static')
 features.set('optimizations', true)
 features.set('dependency_tracking', true)
 features.set('spatial_resampling', true)
@@ -713,7 +714,8 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 	if tgt_os == 'android'
 		message('Assuming standalone build with NDK toolchain.')
-		features.set('static', true)
+		# See later for why we allow shared builds.
+		# features.set('static', true)
 		feature = 'unit_tests'
 		if feature.get(feature, true)
 			if not feature.has(feature)
@@ -1400,10 +1402,12 @@ endif
 
 ### process_detect ###
 
-if features.get('shared', false) and not ['linux', 'solaris', 'darwin', 'iphonesimulator'].contains(tgt_os) and not features.get('gnu', false)
-	# Again, no OS/2 because Meson itself doens't support it
-	error('Shared library build is only supported on ELF and Darwin for now')
-endif
+# Shared builds are supported everywhere thanks to
+# the Meson generation of the module definition files.
+# if features.get('shared', false) and not ['linux', 'solaris', 'darwin', 'iphonesimulator'].contains(tgt_os) and not features.get('gnu', false)
+# 	# Again, no OS/2 because Meson itself doens't support it
+# 	error('Shared library build is only supported on ELF and Darwin for now')
+# endif
 
 features.set('unistd_h', c.has_header('unistd.h'))
 if c.has_header('vpx/vpx_integer.h', include_directories: include_directories('.'))
