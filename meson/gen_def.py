@@ -9,22 +9,22 @@ from sys import platform
 import re
 from sys import stdout
 
-TEXT_SYMBOL = r'^text\s+(.+)$'
-DATA_SYMBOL = r'^data\s+(.+)$'
+SYMBOL = r'^(text|data)\s+(.+)$'
 COMMENT = r'^#(.+)'
 
 # Unlike the stock generator script, this one does not accept 'name'
 # as that tells LINK.EXE to change the library export file name.
 def collate_windows_exports(files: TextIOWrapper, needs_underscore: bool) -> list[str]:
     lines = ['EXPORTS']
+    underscore = '_' if needs_underscore else ''
 
     for file in files:
         for symbol in file.readlines():
             symbol = symbol.strip()
-            if re.match(TEXT_SYMBOL, symbol):
-                lines += f"\t{'_' if needs_underscore else ''}{symbol.rsplit(' ', 1)[0]}"
-            elif re.match(DATA_SYMBOL, symbol):
-                lines += f"\t{'_' if needs_underscore else ''}{symbol.rsplit(' ', 1)[0]}\tDATA"
+            option = re.match(SYMBOL, symbol)
+            if option:
+                suffix = '\tDATA' if option.group(1) == 'data' else ''
+                lines.append(f"\t{underscore}{option.group(2)}{suffix}")
             elif re.match(COMMENT, symbol):
                 continue
             else:
@@ -34,11 +34,14 @@ def collate_windows_exports(files: TextIOWrapper, needs_underscore: bool) -> lis
 
 def collate_linux_ver(files: TextIOWrapper, needs_underscore: bool) -> list[str]:
     lines = ['{ global:']
+    underscore = '_' if needs_underscore else ''
+
     for file in files:
         for symbol in file.readlines():
             symbol = symbol.strip()
-            if re.match(TEXT_SYMBOL, symbol) or re.match(DATA_SYMBOL, symbol):
-                lines += f"{'_' if needs_underscore else ''}{symbol.rsplit(' ', 1)[0]};"
+            option = re.match(SYMBOL, symbol)
+            if option:
+                lines.append(f"{underscore}{option.group(2)};")
             elif re.match(COMMENT, symbol):
                 continue
             else:
@@ -50,11 +53,14 @@ def collate_linux_ver(files: TextIOWrapper, needs_underscore: bool) -> list[str]
 
 def collate_macos_sym(files: TextIOWrapper, needs_underscore: bool) -> list[str]:
     lines = []
+    underscore = '_' if needs_underscore else ''
+
     for file in files:
         for symbol in file.readlines():
             symbol = symbol.strip()
-            if re.match(TEXT_SYMBOL, symbol) or re.match(DATA_SYMBOL, symbol):
-                lines += f"{'_' if needs_underscore else ''}{symbol.rsplit(' ', 1)[0]}"
+            option = re.match(SYMBOL, symbol)
+            if option:
+                lines.append(f"{underscore}{option.group(2)}")
             elif re.match(COMMENT, symbol):
                 continue
             else:
@@ -89,10 +95,6 @@ if __name__ == '__main__':
 
     lines = collate_exports(args.files, format=args.format, needs_underscore=args.underscore)
 
-    tmp = StringIO()
-
     for line in lines:
-        tmp.write(line)
-        tmp.write('\n')
-
-    args.out.write(tmp.getvalue())
+        args.out.write(line)
+        args.out.write('\n')
