@@ -951,7 +951,7 @@ elif tgt_isa.startswith('x86')
 			disable_exts = true
 		else
 			if ext == 'avx512'
-				exts = ['avx512', 'avx512f', 'avx512cd', 'avx512bw', 'avx512dq', 'avx512dl']
+				exts = ['avx512', 'avx512f', 'avx512cd', 'avx512bw', 'avx512dq', 'avx512vl']
 				foreach feature : exts
 					if features.get('gcc', false) and features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
 						rtcd_options += ['--disable-@0@'.format(feature)]
