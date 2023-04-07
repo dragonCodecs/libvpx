@@ -17,20 +17,36 @@
 # You should have received a copy of the GNU Lesser General Public
 # License along with this library; if not, see <http://www.gnu.org/licenses/>.
 
-
-import re
-import os
 import io
+import os
+import re
+from itertools import chain
 from pathlib import PurePosixPath
-from pprint import pprint
-from collections import defaultdict
-
-ASM_EXTS = ['asm', 'S']
 
 SOURCE_TYPE_EXTS_MAP = {
-    'c': ['c', 'cpp'],
-    'asm': ASM_EXTS,
+    'c': 'c',
+    'cpp': 'c',
+    'cc': 'c',
+    'h': 'h',
+    'hpp': 'h',
+    'hxx': 'h',
+    'asm': 'asm',
+    'S': 'c', # because it's not Nasm
+    'yuv': 'data',
+    'y4m': 'data',
+    'ivf': 'data',
+    'webm': 'data',
+    'md5': 'data',
+    'sha1': 'data',
+    'res': 'data',
+    'rawfile': 'data',
 }
+
+def valid_file(target: str, ofile: str, source_type: str) -> bool:
+    if source_type == 'data':
+        return True
+    tgt = os.path.join(os.getcwd(), target, ofile)
+    return os.path.exists(tgt)
 
 def make_to_meson(target: str, paths: list[str]):
     source_maps = {}
@@ -48,24 +64,24 @@ def make_to_meson(target: str, paths: list[str]):
 
                 if accumulate:
                     ofiles = l
-                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+([a-zA-Z0-9_/.]+)$', l):
+                elif option := re.match(r'([A-Z0-9_]+)(?:-yes)?\s+[+:]=\s+([a-zA-Z0-9_/.]+\.[a-zA-Z0-9]+)$', l):
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = ''
                     ofiles = option.group(2)
-                    source_type = PurePosixPath(option.group(2)).suffix.strip('.')
-                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+([a-zA-Z0-9_/.]+)$', l):
+                    source_type = SOURCE_TYPE_EXTS_MAP.get(PurePosixPath(option.group(2)).suffix.strip('.'))
+                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+[+:]=\s+([a-zA-Z0-9_/.-]+)$', l):
                     # remove the component suffix
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = option.group(2)
                     ofiles = option.group(3)
-                    source_type = PurePosixPath(option.group(3)).suffix.strip('.')
-                elif option := re.match(r'([A-Z0-9_]+)-yes\s+\+=\s+(.+)\$\(ASM\)\s*', l):
+                    source_type = SOURCE_TYPE_EXTS_MAP.get(PurePosixPath(option.group(3)).suffix.strip('.'))
+                elif option := re.match(r'([A-Z0-9_]+)-yes\s+[+:]=\s+(.+)\$\(ASM\)\s*', l):
                     # remove the component suffix and patch the extension in
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = ''
                     ofiles = f'{option.group(2)}.asm'
                     source_type = 'c'
-                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+\+=\s+(.+)\$\(ASM\)\s*', l):
+                elif option := re.match(r'([A-Z0-9_]+)-.+(?:HAVE_|CONFIG_)([A-Z0-9_]+).+[+:]=\s+(.+)\$\(ASM\)\s*', l):
                     # remove the component suffix and patch the extension in
                     component = ''.join(option.group(1).split('_SRCS')).lower()
                     label = option.group(2)
@@ -77,7 +93,7 @@ def make_to_meson(target: str, paths: list[str]):
                 accumulate = ofiles.endswith('\\')
                 ofiles = ofiles.strip('\\')
                 ofiles = ofiles.split()
-                ifiles = [ofile for ofile in ofiles if os.path.exists(os.path.join(target, ofile))]
+                ifiles = [ofile for ofile in ofiles if valid_file(target, ofile, source_type)]
 
                 if len([of for of in ofiles if not of.startswith("$")]) != len(ifiles):
                     print("WARNING: %s and %s size don't match, not building!" % ([of for of in ofiles if not of.startswith("$")], ifiles))
@@ -117,6 +133,7 @@ def make_to_meson(target: str, paths: list[str]):
         ('', source_maps.setdefault('c', {})),
         ('headers_', source_maps.setdefault('h', {})),
         ('asm_', source_maps.setdefault('asm', {})),
+        ('data_', source_maps.setdefault('data', {})),
     )
 
     for source_type, components in source_types:
@@ -191,6 +208,10 @@ paths = {
     ],
     'vpx_util': [
         'vpx_util/vpx_util.mk',
+    ],
+    'test': [
+        'test/test.mk',
+        'test/test-data.mk',
     ],
 }
 

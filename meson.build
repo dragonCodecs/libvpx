@@ -1771,3 +1771,7 @@ pkg.generate(
 	description: 'WebM Project VPx codec implementation',
 	version: meson.project_version(),
 )
+
+if features.get('unit_tests', false)
+	subdir('test')
+endif
