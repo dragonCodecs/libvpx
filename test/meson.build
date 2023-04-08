@@ -1253,7 +1253,7 @@ if not features.get('shared', false) # MANUAL
 				'dct16x16_test.cc',
 				'dct32x32_test.cc',
 				'dct_partial_test.cc',
-				'dct_test.cc'
+				'dct_test.cc',
 				'fdct8x8_test.cc',
 				'hadamard_test.cc',
 				'minmax_test.cc',
@@ -1385,7 +1385,7 @@ if features.get('decode_perf_tests', false)
 		'vp9_encoder' : libvpx_test_data_data_optional_sources['vp9_encoder'] + files(
 			# Encode / Decode test
 			'niklas_1280_720_30.yuv',
-		)
+		),
 		'vp9_decoder' : libvpx_test_data_data_optional_sources['vp9_decoder'] + files(
 			# BBB VP9 streams
 			'vp90-2-bbb_426x240_tile_1x1_180kbps.webm',
@@ -1408,7 +1408,7 @@ if features.get('decode_perf_tests', false)
 			'vp90-2-tos_854x356_tile_1x2_fpm_546kbps.webm',
 			'vp90-2-tos_1280x534_tile_1x4_1306kbps.webm',
 			'vp90-2-tos_1280x534_tile_1x4_fpm_952kbps.webm',
-			'vp90-2-tos_1920x800_tile_1x4_fpm_2335kbps.webm
+			'vp90-2-tos_1920x800_tile_1x4_fpm_2335kbps.webm',
 		)
 	}
 endif

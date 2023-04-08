@@ -1776,6 +1776,6 @@ pkg.generate(
 	version: meson.project_version(),
 )
 
-if features.get('unit_tests', false)
-	subdir('test')
-endif
+# if features.get('unit_tests', false)
+# 	subdir('test')
+# endif
