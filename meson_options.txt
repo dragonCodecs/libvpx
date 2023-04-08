@@ -19,8 +19,6 @@ option('decode_perf_tests', type: 'combo', choices: ['unset', 'true', 'false'], 
 option('encode_perf_tests', type: 'combo', choices: ['unset', 'true', 'false'], description: 'build encoder perf tests with unit tests')
 option('size_limit', type: 'string', description: 'max size to allow in the decoder')
 option('codec_srcs', type: 'combo', choices: ['unset', 'true', 'false'], description: 'in/exclude codec library source code')
-option('debug_libs', type: 'combo', choices: ['unset', 'true', 'false'], description: 'in/exclude debug version of libraries')
-option('static_msvcrt', type: 'combo', choices: ['unset', 'true', 'false'], description: 'use static MSVCRT (VS builds only)')
 option('vp9_highbitdepth', type: 'combo', choices: ['unset', 'true', 'false'], description: 'use VP9 high bit depth (10/12) profiles')
 option('better_hw_compatibility', type: 'combo', choices: ['unset', 'true', 'false'], description: 'enable encoder to produce streams with better hardware decoder compatibility')
 option('vp8', type: 'combo', choices: ['unset', 'true', 'false'], description: 'Enable the VP8 codec')

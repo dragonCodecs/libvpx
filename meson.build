@@ -9,7 +9,11 @@ project(
 		# Uncomment when Meson can handle this one for MSVC.
 		# 'cpp_std=gnu++11',
 		'warning_level=2',
-	]
+		'default_library=static',
+		'buildtype=debugoptimized',
+	],
+	license: 'BSD-3-Clause',
+	meson_version: '>=0.64',
 )
 
 features = configuration_data()
@@ -294,6 +298,8 @@ IGNORE_MESON_BUILTINS = [
 	'shared',
 	'static',
 	'small',
+	'static_msvcrt',
+	'debug_libs',
 ]
 
 MESON_OPTIONS = [
@@ -350,6 +356,8 @@ features.set('extra_warnings', not ['0', '1'].contains(get_option('warning_level
 features.set('werror', get_option('werror'))
 features.set('debug', ['debug', 'debugoptimized'].contains(get_option('buildtype')))
 features.set('gcov', get_option('b_coverage'))
+features.set('static_msvcrt', ['static_from_buildtype', 'mt'].contains(get_option('b_vscrt')))
+features.set('debug_libs', features.get('debug', false))
 
 tune_cpu = ''
 

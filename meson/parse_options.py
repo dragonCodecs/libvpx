@@ -88,6 +88,7 @@ MESON_HANDLED_OPTIONS = [
     'shared',
     'static',
     'small',
+    'static_msvcrt',
 ]
 
 def filter_meson_handled_options(pair) -> bool:
