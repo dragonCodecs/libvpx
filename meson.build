@@ -1691,6 +1691,7 @@ vpx_version_h = configure_file(
 
 codec_srcs += vpx_version_h
 
+subdir('third_party')
 subdir('vpx')
 subdir('vpx_mem')
 subdir('vpx_scale')
@@ -1776,6 +1777,13 @@ else
 	)
 endif
 
+libvpx_dep = declare_dependency(
+	link_with: libvpx,
+	include_directories: include_directories('.'),
+)
+
+meson.override_dependency('libvpx', libvpx_dep)
+
 pkg = import('pkgconfig')
 
 pkg.generate(
@@ -1783,6 +1791,10 @@ pkg.generate(
 	description: 'WebM Project VPx codec implementation',
 	version: meson.project_version(),
 )
+
+if features.get('examples', false)
+subdir('examples')
+endif
 
 # if features.get('unit_tests', false)
 # 	subdir('test')
