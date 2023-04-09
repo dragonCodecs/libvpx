@@ -993,15 +993,16 @@ elif tgt_isa.startswith('x86')
 				if ext.contains('_')
 					exts += [ext.split('_')[0]]
 				endif
+				opt = ext
 				foreach feature : exts
-					if features.get('gcc', false) and features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
+					if features.get('gcc', false) and features.get(opt, true) and not c.has_argument('-m@0@'.format(feature))
 						rtcd_options += ['--disable-@0@'.format(feature)]
 					else
-						if features.get(feature, true) # soft_enabled
-							if not features.has(feature)
-								message('\tenabling @0@'.format(feature))
+						if features.get(opt, true) # soft_enabled
+							if not features.has(opt)
+								message('\tenabling @0@'.format(opt))
 							endif
-							features.set(feature, true)
+							features.set(opt, true)
 						endif
 					endif
 				endforeach
