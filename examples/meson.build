@@ -4,317 +4,197 @@ examples_deps = [libvpx_dep]
 # while EXAMPLES demonstrate specific portions of the API.
 
 # Unlike the original, I'm putting all the common files in a
-# single library.
+# single library to save on up to 16 copies of the same translation unit
+# (y4minput.c and tools_common.c, for instance).
+
+vpx_examples_common_headers = []
+
+vpx_examples_common_sources = []
+
+if features.get('decoders', false) or features.get('encoders', false)
+	vpx_examples_common_headers += files(
+		'../vpx_ports/mem_ops.h',
+		'../vpx_ports/mem_ops_aligned.h',
+		'../vpx_ports/msvc.h',
+		'../args.h',
+		'../ivfdec.h',
+		'../y4minput.h',
+		'../tools_common.h',
+		'../ivfenc.h', # encoders or decoders or vp8|9_encoder or (decoders and vp9_encoder)
+		'../vpx_ports/vpx_timer.h',
+		'../video_common.h',
+	)
+
+	vpx_examples_common_sources += files(
+		'../args.c',
+		'../ivfdec.c',
+		'../y4minput.c',
+		'../tools_common.c',
+		'../ivfenc.c', # encoders or decoders or vp8|9_encoder or (decoders and vp9_encoder)
+	)
+endif
+
+if features.get('decoders', false)
+	vpx_examples_common_headers += files(
+		'../vpx_ports/compiler_attributes.h',
+		'../md5_utils.h',
+		'../video_reader.h',
+	)
+
+	vpx_examples_common_sources += files(
+		'../md5_utils.c',
+		'../video_reader.c',
+	)
+endif
+
+if features.get('encoders', false) or features.get('vp9_encoder', false)
+	vpx_examples_common_headers += files(
+		'../vpxstats.h',
+	)
+
+	vpx_examples_common_sources += files(
+		'../vpxstats.c',
+	)
+endif
+
+if features.get('encoders', false) or (features.get('decoders', false) and features.get('vp9_encoder', false))
+	vpx_examples_common_headers += files(
+		'../video_writer.h',
+	)
+
+	vpx_examples_common_sources += files(
+		'../video_writer.c',
+	)
+endif
+
+vpx_examples_common = static_library(
+	'vpx_examples_common',
+	vpx_examples_common_sources,
+	extra_files: vpx_examples_common_headers,
+	dependencies: examples_deps,
+)
+
+examples_deps += declare_dependency(
+	link_with: vpx_examples_common,
+	include_directories: include_directories('.'),
+)
 
 vpxdec_headers = files(
-	'../md5_utils.h',
-	'../vpx_ports/compiler_attributes.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
-	'../vpx_ports/vpx_timer.h',
 	'../vpx/vpx_integer.h',
-	'../args.h',
-	'../ivfdec.h',
-	'../y4minput.h',
-	'../tools_common.h',
 	'../y4menc.h',
 )
 
 vpxdec_srcs = files(
 	'../vpxdec.c',
-	'../md5_utils.c',
-	'../args.c',
-	'../ivfdec.c',
-	'../y4minput.c',
-	'../tools_common.c',
 	'../y4menc.c',
 )
 
 vpxenc_headers = files(
-	'../args.h',
-	'../y4minput.h',
 	'../vpxenc.h',
-	'../ivfdec.h',
-	'../ivfenc.h',
 	'../rate_hist.h',
-	'../tools_common.h',
 	'../warnings.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
-	'../vpx_ports/vpx_timer.h',
-	'../vpxstats.h',
 )
 
 vpxenc_srcs = files(
 	'../vpxenc.c',
-	'../args.c',
-	'../y4minput.c',
-	'../ivfdec.c',
-	'../ivfenc.c',
 	'../rate_hist.c',
-	'../tools_common.c',
 	'../warnings.c',
-	'../md5_utils.c',
-	'../vpxstats.c',
 )
 
 vp9_spatial_svc_encoder_headers = files(
-	'../args.h',
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
-	'../vpxstats.h',
 	'svc_context.h',
 )
 
 vp9_spatial_svc_encoder_srcs = files(
 	'vp9_spatial_svc_encoder.c',
-	'../args.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
-	'../vpxstats.c',
 	'svc_encodeframe.c',
 )
 
 vpx_temporal_svc_encoder_headers = files(
-	'../ivfenc.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
-	'../y4minput.h',
 )
 
 vpx_temporal_svc_encoder_srcs = files(
 	'vpx_temporal_svc_encoder.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
+)
+
+simple_decoder_headers = files(
 )
 
 simple_decoder_srcs  = files(
 	'simple_decoder.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_reader.c',
 )
 
-simple_decoder_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_reader.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
-)
-
-simple_decoder_srcs  = files(
-	'simple_decoder.c',
-	'../ivfdec.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_reader.c',
-)
-
-simple_decoder_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_reader.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
+postproc_headers = files(
 )
 
 postproc_srcs  = files(
 	'postproc.c',
-	'../ivfdec.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_reader.c',
-)
-
-postproc_headers = files(
-	'../ivfdec.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_reader.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
 )
 
 decode_to_md5_srcs = files(
-	'decode_to_md5.c',
-	'../md5_utils.c',
-	'../ivfdec.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_reader.c',
+	'decode_to_md5.c'
 )
 
 decode_to_md5_headers = files(
-	'../md5_utils.h',
-	'../ivfdec.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_reader.h',
-	'../vpx_ports/compiler_attributes.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
+)
+
+simple_encoder_headers = files(
 )
 
 simple_encoder_srcs = files(
 	'simple_encoder.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 simple_encoder_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 vp9_lossless_encoder_srcs = files(
 	'vp9_lossless_encoder.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 vp9_lossless_encoder_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 twopass_encoder_srcs = files(
 	'twopass_encoder.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 twopass_encoder_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 decode_with_drops_srcs = files(
 	'decode_with_drops.c',
-	'../ivfdec.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_reader.c',
 )
 
 decode_with_drops_headers = files(
-	'../ivfdec.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_reader.h',
-	'../vpx_ports/mem_ops.h',
-	'../vpx_ports/mem_ops_aligned.h',
-	'../vpx_ports/msvc.h',
 )
 
 set_maps_srcs = files(
 	'set_maps.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 set_maps_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 vp8cx_set_ref_srcs = files(
 	'vp8cx_set_ref.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 vp8cx_set_ref_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 vp9cx_set_ref_srcs = files(
 	'vp9cx_set_ref.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 vp9cx_set_ref_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 vp8_multi_resolution_encoder_srcs = files(
 	'vp8_multi_resolution_encoder.c',
-	'../ivfenc.c',
-	'../y4minput.c',
-	'../tools_common.c',
-	'../video_writer.c',
 )
 
 vp9cx_set_ref_headers = files(
-	'../ivfenc.h',
-	'../y4minput.h',
-	'../tools_common.h',
-	'../video_common.h',
-	'../video_writer.h',
-	'../vpx_ports/msvc.h',
 )
 
 # Add compile flags and include path for libwebm sources.
