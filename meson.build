@@ -1812,6 +1812,10 @@ if features.get('examples', false)
 subdir('examples')
 endif
 
+if features.get('tools', false)
+subdir('tools')
+endif
+
 # if features.get('unit_tests', false)
 # 	subdir('test')
 # endif
