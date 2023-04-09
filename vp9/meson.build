@@ -582,17 +582,10 @@ endif
 vp9_rtcd_defs = files(
 	'common/vp9_rtcd_defs.pl',
 )
+codec_rtcds += {
+	'vp9_rtcd': vp9_rtcd_defs[0]
+}
 
-vp9_rtcd_h = custom_target(
-	'vp9_rtcd.h',
-	command: rtcd_h_template + ['--sym=@0@'.format('vp9_rtcd'), '@INPUT1@'],
-	input: [config_mk, vp9_rtcd_defs[0]],
-	output: 'vp9_rtcd.h',
-	capture: true,
-)
-
-codec_srcs += vp9_rtcd_h
-codec_arch_prereqs += vp9_rtcd_h
 codec_headers += vp9_rtcd_defs
 
 if features.get('vp9_encoder', false)

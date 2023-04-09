@@ -64,14 +64,7 @@ vpx_scale_rtcd_defs = files(
 	'vpx_scale_rtcd.pl',
 )
 
-vpx_scale_rtcd_h = custom_target(
-	'vpx_scale_rtcd.h',
-	command: rtcd_h_template + ['--sym=@0@'.format('vpx_scale_rtcd'), '@INPUT1@'],
-	input: [config_mk, vpx_scale_rtcd_defs[0]],
-	output: 'vpx_scale_rtcd.h',
-	capture: true,
-)
-
-codec_srcs += vpx_scale_rtcd_h
-codec_arch_prereqs += vpx_scale_rtcd_h
+codec_rtcds += {
+	'vpx_scale_rtcd': vpx_scale_rtcd_defs[0]
+}
 codec_headers += vpx_scale_rtcd_defs

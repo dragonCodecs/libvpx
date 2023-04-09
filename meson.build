@@ -1579,6 +1579,7 @@ codec_srcs = [
 ]
 codec_headers = []
 codec_exports = []
+codec_rtcds = {}
 
 # What no one told me, and is veery tucked into the Makefiles,
 # is that Google's relying on regexp'd per-file architecture flags.
@@ -1700,6 +1701,20 @@ subdir('vpx_dsp')
 subdir('vpx_util')
 subdir('vp8')
 subdir('vp9')
+
+foreach symbol, input_file : codec_rtcds
+	rtcd_filename = '@0@.h'.format(symbol)
+	rtcd_h = custom_target(
+		rtcd_filename,
+		command: rtcd_h_template + ['--sym=@0@'.format(symbol), '@INPUT1@'],
+		input: [config_mk, input_file],
+		output: rtcd_filename,
+		capture: true,
+	)
+
+	codec_srcs += rtcd_h
+	codec_arch_prereqs += rtcd_h
+endforeach
 
 gen_def_exe = find_program('meson/gen_def.py', required: true)
 

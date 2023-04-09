@@ -541,16 +541,10 @@ vp8_rtcd_defs = files(
 	'common/rtcd_defs.pl',
 )
 
-vp8_rtcd_h = custom_target(
-	'vp8_rtcd.h',
-	command: rtcd_h_template + ['--sym=@0@'.format('vp8_rtcd'), '@INPUT1@'],
-	input: [config_mk, vp8_rtcd_defs[0]],
-	output: 'vp8_rtcd.h',
-	capture: true,
-)
+codec_rtcds += {
+	'vp8_rtcd': vp8_rtcd_defs[0]
+}
 
-codec_srcs += vp8_rtcd_h
-codec_arch_prereqs += vp8_rtcd_h
 codec_headers += vp8_rtcd_defs
 
 if features.get('vp8_encoder', false)
