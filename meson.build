@@ -53,17 +53,12 @@ endforeach
 
 perl_exe = find_program('perl', required: true)
 
-doxygen_exe = find_program('doxygen', required: false)
+doxygen = find_program('doxygen', required: false)
 
-if doxygen_exe.found()
-	doxygen_version = run_command(
-		doxygen_exe,
-		'--version',
-		check: true,
-		capture: true
-	).stdout().strip()
+if doxygen.found()
+	doxygen_version = doxygen.version()
 
-	if doxygen_version.version_compare('>= 2.0.0') or doxygen_version.version_compare('>= 1.6.0') or doxygen_version.version_compare('>= 1.5.5.3')
+	if doxygen_version.version_compare('>= 1.5.5.3')
 		features.set('doxygen', true)
 	endif
 endif
@@ -1578,6 +1573,8 @@ extra_libs += c.find_library('m', required: false)
 codec_srcs = [
 	vpx_config_c,
 ]
+codec_doc_srcs = []
+codec_doc_sections = []
 codec_headers = []
 codec_exports = []
 codec_rtcds = {}
@@ -1669,6 +1666,10 @@ else
 endif
 
 rtcd_h_template = [rtcd_exe, '--arch=@0@'.format(tgt_isa), '--config=@INPUT0@'] + rtcd_options
+
+doxy_template = find_program('meson/generate_doxy.py', required: true)
+
+generate_component_dox = find_program('meson/generate_component_dox.py', required: true)
 
 #
 # Add assembler dependencies for configuration.
@@ -1819,3 +1820,62 @@ endif
 # if features.get('unit_tests', false)
 # 	subdir('test')
 # endif
+
+if features.get('docs', false)
+	libs_doxy = configure_file(
+		command: [doxy_template, '--sections', codec_doc_sections, '--include', meson.current_source_dir(), '--output', '@OUTPUT@', '@INPUT@'],
+		input: codec_doc_srcs,
+		output: 'libs.doxy',
+	)
+
+	codec_dox = files(
+		'mainpage.dox',
+		'keywords.dox',
+		'usage.dox',
+		'usage_cx.dox',
+		'usage_dx.dox',
+	)
+
+	example_path = [
+		meson.current_source_dir(), #for CHANGELOG, README, etc
+		meson.current_build_dir() / 'examples',
+	]
+
+	generate_doxyfile = find_program('meson/generate_doxyfile.py', required: true)
+
+	doxyfile_prelude = files(
+		'libs.doxy_template'
+	)
+
+	if features.get('examples', false)
+		doxyfile_prelude += examples_doxy
+	endif
+
+	if features.get('tools', false)
+		doxyfile_prelude += tools_doxy
+	endif
+
+	doxyfile_prelude += libs_doxy
+
+	doxyfile = configure_file(
+		command: [
+			generate_doxyfile,
+			'--prelude', doxyfile_prelude,
+			'--strip', meson.current_source_dir(), meson.current_build_dir(),
+			'--example-path', example_path,
+			'--output', '@OUTPUT@',
+			'@INPUT@'],
+		output: 'Doxyfile',
+		input: codec_dox
+	)
+
+	docs = custom_target(
+		'docs',
+		input: doxyfile,
+		output: 'html',
+		command: [doxygen, doxyfile],
+		console: true,
+		install: true,
+		install_dir: get_option('datadir') / meson.project_name(),
+	)
+endif

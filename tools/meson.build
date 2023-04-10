@@ -1,3 +1,5 @@
+doxfiles = []
+
 tiny_ssim_srcs = files(
 	'tiny_ssim.c',
 	'../y4minput.c',
@@ -16,7 +18,6 @@ tiny_ssim_headers = files(
 	'../vpx_mem/include/vpx_mem_intrnl.h',
 )
 
-# Generate SSIM/PSNR from raw .yuv files
 tiny_ssim = executable(
 	'tiny_ssim',
 	tiny_ssim_srcs,
@@ -25,26 +26,36 @@ tiny_ssim = executable(
 	install: get_option('install_bins'),
 )
 
-# #
-# # Documentation Rules
-# #
-# %.dox: %.c
-# 	@echo "    [DOXY] $@"
-# 	@mkdir -p $(dir $@)
-# 	@echo "/*!\page tools_$(@F:.dox=) $(@F:.dox=)" > $@
-# 	@echo "   \includelineno $(<F)" >> $@
-# 	@echo "*/" >> $@
+tools_subpages = {
+    'tiny_ssim': 'Generate SSIM/PSNR from raw .yuv files'
+}
 
-# tools.dox: tools.mk
-# 	@echo "    [DOXY] $@"
-# 	@echo "/*!\page tools Tools" > $@
-# 	@echo "    This SDK includes a number of tools/utilities."\
-# 	      "The following tools are included: ">>$@
-# 	@$(foreach ex,$(sort $(notdir $(TOOLS:.c=))),\
-# 	   echo "     - \subpage tools_$(ex) $($(ex).DESCRIPTION)" >> $@;)
-# 	@echo "*/" >> $@
+tools_subpages_entries = []
 
-# CLEAN-OBJS += tools.doxy tools.dox $(TOOLS:.c=.dox)
-# DOCS-yes += tools.doxy tools.dox
-# tools.doxy: tools.dox $(TOOLS:.c=.dox)
-# 	@echo "INPUT += $^" > $@
+#
+# Documentation Rules
+#
+
+foreach page, description: tools_subpages
+	doxfiles += configure_file(
+		command: [generate_component_dox, '--component', 'tools', '--output', '@OUTPUT@', '@INPUT@'],
+		input: get_variable('@0@_srcs'.format(page))[0],
+		output: '@0@.dox'.format(page),
+	)
+
+	tools_subpages_entries += '    - \subpage tools_@0@ @1@'.format(page, description)
+endforeach
+
+tools_dox = configure_file(
+	input: 'tools.dox.in',
+	output: 'tools.dox', 
+	configuration: {
+		'tools_subpages': '\n'.join(tools_subpages_entries),
+	}
+)
+
+tools_doxy = configure_file(
+	command: [doxy_template, '--sections', 'tools', '--output', '@OUTPUT@', '@INPUT@'],
+	input: [tools_dox] + doxfiles,
+	output: 'tools.doxy',
+)

@@ -87,20 +87,32 @@ foreach comp_name, comp_sources : optional_sources
 	endif
 endforeach
 
-codec_headers += api_doc_headers_sources
+codec_doc_srcs += api_doc_headers_sources
 optional_sources = get_variable('api_doc_headers_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
-	if not features.get(comp_name, false)
-		continue
-	endif
-	if ARCH_EXT_LIST.contains(comp_name)
-		codec_arch_headers += {
-			comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
-		}
-	else
-		codec_headers += comp_sources
+	if features.get(comp_name, false)
+		codec_doc_srcs += comp_sources
 	endif
 endforeach
+
+if features.get('vp9_encoder', false)
+	codec_doc_srcs += files(
+		'vp8.h',
+		'vp8cx.h',
+		'vpx_ext_ratectrl.h'
+	)
+
+	codec_doc_sections += ['vp9', 'vp9_encoder']
+endif
+
+if features.get('vp9_decoder', false)
+	codec_doc_srcs += files(
+		'vp8.h',
+		'vp8dx.h',
+	)
+
+	codec_doc_sections += ['vp9', 'vp9_decoder']
+endif
 
 codec_exports += files(
 	'exports_com'
@@ -110,10 +122,14 @@ if features.get('encoders', false)
 	codec_exports += files(
 		'exports_enc',
 	)
+
+	codec_doc_sections += ['encoder']
 endif
 
 if features.get('decoders', false)
 	codec_exports += files(
 		'exports_dec',
 	)
+
+	codec_doc_sections += ['decoder']
 endif

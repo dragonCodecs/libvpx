@@ -1,3 +1,6 @@
+examples_subpages = {}
+utils_subpages = {}
+
 examples_deps = [libvpx_dep]
 
 # List of examples to build. UTILS are tools meant for distribution
@@ -230,6 +233,10 @@ if features.get('decoders', false)
 		dependencies: vpxdec_deps,
 		install: features.get('install_bins', false),
 	)
+
+	utils_subpages += {
+		'vpxdec': 'Full featured decoder'
+	}
 endif
 
 if features.get('encoders', false)
@@ -246,6 +253,10 @@ if features.get('encoders', false)
 		dependencies: vpxenc_deps,
 		install: features.get('install_bins', false),
 	)
+
+	utils_subpages += {
+		'vpxenc': 'Full featured encoder'
+	}
 endif
 
 if features.get('vp9_encoder', false)
@@ -255,6 +266,10 @@ if features.get('vp9_encoder', false)
 		extra_files: vp9_spatial_svc_encoder_headers,
 		dependencies: examples_deps,
 	)
+
+	examples_subpages += {
+		'vp9_spatial_svc_encoder': 'VP9 Spatial SVC Encoder'
+	}
 endif
 
 if not features.get('shared', false)
@@ -275,7 +290,6 @@ if features.get('encoders', false)
 		dependencies: examples_deps,
 	)
 
-	# Frame by frame MD5 checksum
 	decode_to_md5 = executable(
 		'decode_to_md5',
 		decode_to_md5_srcs,
@@ -283,7 +297,6 @@ if features.get('encoders', false)
 		dependencies: examples_deps,
 	)
 
-	# Simplified encoder loop
 	simple_encoder = executable(
 		'simple_encoder',
 		simple_encoder_srcs,
@@ -291,7 +304,6 @@ if features.get('encoders', false)
 		dependencies: examples_deps,
 	)
 
-	# Simplified lossless VP9 encoder
 	vp9_lossless_encoder = executable(
 		'vp9_lossless_encoder',
 		vp9_lossless_encoder_srcs,
@@ -299,7 +311,6 @@ if features.get('encoders', false)
 		dependencies: examples_deps,
 	)
 
-	# Two-pass encoder loop
 	twopass_encoder = executable(
 		'twopass_encoder',
 		twopass_encoder_srcs,
@@ -307,17 +318,24 @@ if features.get('encoders', false)
 		dependencies: examples_deps,
 	)
 
-	# Set active and ROI maps
 	set_maps = executable(
 		'set_maps',
 		set_maps_srcs,
 		extra_files: set_maps_headers,
 		dependencies: examples_deps,
 	)
+
+	examples_subpages += {
+		'vpx_temporal_svc_encoder': 'Temporal SVC Encoder',
+		'decode_to_md5': 'Frame by frame MD5 checksum',
+		'simple_encoder': 'Simplified encoder loop',
+		'vp9_lossless_encoder': 'Simplified lossless VP9 encoder',
+		'twopass_encoder': 'Two-pass encoder loop',
+		'set_maps': 'Set active and ROI maps',
+	}
 endif
 
 if features.get('decoders', false)
-	# Simplified decoder loop
 	simple_decoder = executable(
 		'simple_decoder',
 		simple_decoder_srcs,
@@ -332,76 +350,98 @@ if features.get('decoders', false)
 		dependencies: examples_deps,
 	)
 
-	# Drops frames while decoding
 	decode_with_drops = executable(
 		'decode_with_drops',
 		decode_with_drops_srcs,
 		extra_files: postproc_headers,
 		dependencies: examples_deps,
 	)
+
+	examples_subpages += {
+		'simple_decoder': 'Simplified decoder loop',
+		'postproc': 'Decoder postprocessor control',
+		'decode_with_drops': 'Drops frames while decoding',
+	}
 endif
 
 if features.get('vp8_encoder', false)
-	# VP8 set encoder reference frame
 	vp8cx_set_ref = executable(
 		'vp8cx_set_ref',
 		vp8cx_set_ref_srcs,
 		extra_files: vp8cx_set_ref_headers,
 		dependencies: examples_deps,
 	)
+
+	examples_subpages += {
+		'vp8cx_set_ref': 'VP8 set encoder reference frame',
+	}
 endif
 
 if features.get('vp9_encoder', false) and features.get('decoders', false)
-	# VP9 set encoder reference frame
 	vp9cx_set_ref = executable(
 		'vp9cx_set_ref',
 		vp9cx_set_ref_srcs,
 		extra_files: vp9cx_set_ref_headers,
 		dependencies: examples_deps,
 	)
+
+	examples_subpages += {
+		'vp9cx_set_ref': 'VP9 set encoder reference frame',
+	}
 endif
 
 if features.get('multi_res_encoding', false) and features.get('libyuv', false)
-	# VP8 Multiple-resolution Encoding
 	vp8_multi_resolution_encoder = executable(
 		'vp8_multi_resolution_encoder',
 		vp8_multi_resolution_encoder_srcs,
 		extra_files: vp8_multi_resolution_encoder_headers,
 		dependencies: examples_deps + libyuv_dep,
 	)
+
+	examples_subpages += {
+		'vp8_multi_resolution_encoder': 'VP8 Multiple-resolution Encoding',
+	}
 endif
 
 #
 # Documentation Rules
 #
-# %.dox: %.c
-# 	@echo "    [DOXY] $@"
-# 	@mkdir -p $(dir $@)
-# 	@echo "/*!\page example_$(@F:.dox=) $(@F:.dox=)" > $@
-# 	@echo "   \includelineno $(<F)" >> $@
-# 	@echo "*/" >> $@
 
-# samples.dox: examples.mk
-# 	@echo "    [DOXY] $@"
-# 	@echo "/*!\page samples Sample Code" > $@
-# 	@echo "    This SDK includes a number of sample applications."\
-# 				"Each sample documents a feature of the SDK in both prose"\
-# 				"and the associated C code."\
-# 				"The following samples are included: ">>$@
-# 	@$(foreach ex,$(sort $(notdir $(EXAMPLES:.c=))),\
-# 		 echo "     - \subpage example_$(ex) $($(ex).DESCRIPTION)" >> $@;)
-# 	@echo >> $@
-# 	@echo "    In addition, the SDK contains a number of utilities."\
-# 							"Since these utilities are built upon the concepts described"\
-# 							"in the sample code listed above, they are not documented in"\
-# 							"pieces like the samples are. Their source is included here"\
-# 							"for reference. The following utilities are included:" >> $@
-# 	@$(foreach ex,$(sort $(UTILS:.c=)),\
-# 		 echo "     - \subpage example_$(ex) $($(ex).DESCRIPTION)" >> $@;)
-# 	@echo "*/" >> $@
+doxfiles = []
+examples_subpages_entries = []
+utils_subpages_entries = []
 
-# CLEAN-OBJS += examples.doxy samples.dox $(ALL_EXAMPLES:.c=.dox)
-# DOCS-yes += examples.doxy samples.dox
-# examples.doxy: samples.dox $(ALL_EXAMPLES:.c=.dox)
-# 	@echo "INPUT += $^" > $@
-# 	@echo "ENABLED_SECTIONS += samples" >> $@
+foreach page, description: examples_subpages
+	doxfiles += configure_file(
+		command: [generate_component_dox, '--component', 'example', '--output', '@OUTPUT@', '@INPUT@'],
+		input: get_variable('@0@_srcs'.format(page))[0],
+		output: '@0@.dox'.format(page),
+	)
+
+	examples_subpages_entries += '    - \subpage example_@0@ @1@'.format(page, description)
+endforeach
+
+foreach page, description: utils_subpages
+	doxfiles += configure_file(
+		command: [generate_component_dox, '--component', 'example', '--output', '@OUTPUT@', '@INPUT@'],
+		input: get_variable('@0@_srcs'.format(page))[0],
+		output: '@0@.dox'.format(page),
+	)
+
+	utils_subpages_entries += '    - \subpage example_@0@ @1@'.format(page, description)
+endforeach
+
+samples_dox = configure_file(
+	input: 'samples.dox.in',
+	output: 'samples.dox', 
+	configuration: {
+		'examples_subpages': '\n'.join(examples_subpages_entries),
+		'utils_subpages': '\n'.join(utils_subpages_entries),
+	}
+)
+
+examples_doxy = configure_file(
+	command: [doxy_template, '--sections', 'samples', '--output', '@OUTPUT@', '@INPUT@'],
+	input: [samples_dox] + doxfiles,
+	output: 'examples.doxy',
+)
