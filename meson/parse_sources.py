@@ -57,6 +57,8 @@ def make_to_meson(target: str, paths: list[str]):
         with open(path, 'r') as f:
             accum = []
             accumulate = False
+            component = None
+            label = None
             source_type = None
 
             for l in f.readlines():
@@ -90,6 +92,9 @@ def make_to_meson(target: str, paths: list[str]):
                 else:
                     continue
 
+                if not source_type or not component or not label:
+                    raise RuntimeError('Unspecified input file data was found')
+
                 accumulate = ofiles.endswith('\\')
                 ofiles = ofiles.strip('\\')
                 ofiles = ofiles.split()
@@ -102,13 +107,16 @@ def make_to_meson(target: str, paths: list[str]):
                 if accumulate:
                     accum += ifiles
                 else:
-                    component_sources: dict(list(str)) = source_maps.setdefault(source_type, {}).setdefault(component, {})
+                    component_sources: dict[str, list[str]] = source_maps.setdefault(source_type, {}).setdefault(component, {})
                     component_sources[label] = component_sources.setdefault(label, list()) + accum + ifiles
                     accum = []
 
+            if not label:
+                raise RuntimeError('Unspecified component type')
+
             # Makefiles can end with '\' and this is just a porting script ;)
             if accum:
-                component_sources: dict(list(str)) = source_maps.setdefault(source_type, {}).setdefault(component, {})
+                component_sources: dict[str, list[str]] = source_maps.setdefault(source_type, {}).setdefault(component, {})
                 component_sources[label] = component_sources.setdefault(label, list()) + accum
                 accum = []
 

@@ -7,14 +7,14 @@ from argparse import ArgumentParser
 from pathlib import Path
 import re
 
-def parse_all_options(lines: list[str]) -> dict[str]:
+def parse_all_options(lines: list[str]) -> dict[str, str]:
     options = {}
     for line in lines:
         if option := re.match(r'#define\s+(VPX_ARCH|HAVE|CONFIG)(_[A-Z0-9_]+)\s+([01])', line):
             options[f'{option.group(1)}{option.group(2)}'] = option.group(3)
     return options
 
-def create_config_asm_file(options: dict[str], output: Path, format='yasm'):
+def create_config_asm_file(options: dict[str, str], output: Path, format='yasm'):
     with open(output, 'w', encoding='utf-8') as f:
         if format == 'yasm':
             lines = [f'{k} equ {v}\n' for k, v in options.items()]

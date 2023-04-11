@@ -4,8 +4,7 @@
 # SPDX-License-Identifier: LGPL-2.1-or-later
 
 from argparse import ArgumentParser, FileType, REMAINDER
-from io import StringIO, TextIOWrapper
-from sys import platform
+from io import TextIOWrapper
 import re
 from sys import stdout
 
@@ -14,7 +13,7 @@ COMMENT = r'^#(.+)'
 
 # Unlike the stock generator script, this one does not accept 'name'
 # as that tells LINK.EXE to change the library export file name.
-def collate_windows_exports(files: TextIOWrapper, needs_underscore: bool) -> list[str]:
+def collate_windows_exports(files: list[TextIOWrapper], needs_underscore: bool) -> list[str]:
     lines = ['EXPORTS']
     underscore = '_' if needs_underscore else ''
 
@@ -32,7 +31,7 @@ def collate_windows_exports(files: TextIOWrapper, needs_underscore: bool) -> lis
 
     return lines
 
-def collate_linux_ver(files: TextIOWrapper, needs_underscore: bool) -> list[str]:
+def collate_linux_ver(files: list[TextIOWrapper], needs_underscore: bool) -> list[str]:
     lines = ['{ global:']
     underscore = '_' if needs_underscore else ''
 
@@ -51,7 +50,7 @@ def collate_linux_ver(files: TextIOWrapper, needs_underscore: bool) -> list[str]
 
     return lines
 
-def collate_macos_sym(files: TextIOWrapper, needs_underscore: bool) -> list[str]:
+def collate_macos_sym(files: list[TextIOWrapper], needs_underscore: bool) -> list[str]:
     lines = []
     underscore = '_' if needs_underscore else ''
 
@@ -68,7 +67,7 @@ def collate_macos_sym(files: TextIOWrapper, needs_underscore: bool) -> list[str]
 
     return lines
 
-def collate_exports(files: TextIOWrapper, format='win', needs_underscore=False) -> list[str]:
+def collate_exports(files: list[TextIOWrapper], format='win', needs_underscore=False) -> list[str]:
     if format == 'mac':
         return collate_macos_sym(files, needs_underscore)
     elif format == 'linux':
