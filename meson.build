@@ -53,7 +53,7 @@ endforeach
 
 perl_exe = find_program('perl', required: true)
 
-doxygen = find_program('doxygen', required: false)
+doxygen = find_program('doxygen', required: false, disabler: true)
 
 if doxygen.found()
 	doxygen_version = doxygen.version()
@@ -1884,7 +1884,7 @@ if features.get('unit_tests', false)
 	subdir('test')
 endif
 
-if features.get('docs', false)
+if features.get('install_docs', false)
 	libs_doxy = configure_file(
 		command: [doxy_template, '--sections', codec_doc_sections, '--include', meson.current_source_dir(), '--output', '@OUTPUT@', '@INPUT@'],
 		input: codec_doc_srcs,
