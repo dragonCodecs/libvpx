@@ -1101,7 +1101,7 @@ if not features.get('encoders', false) or not features.get('postproc', false) or
 		'vsx' : dsp_optional_sources['vsx'] + files(
 			'ppc/variance_vsx.c',
 		),
-		
+
 	}
 
 	dsp_headers_optional_sources += {

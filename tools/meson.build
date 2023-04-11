@@ -48,7 +48,7 @@ endforeach
 
 tools_dox = configure_file(
 	input: 'tools.dox.in',
-	output: 'tools.dox', 
+	output: 'tools.dox',
 	configuration: {
 		'tools_subpages': '\n'.join(tools_subpages_entries),
 	}

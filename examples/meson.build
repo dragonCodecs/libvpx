@@ -433,7 +433,7 @@ endforeach
 
 samples_dox = configure_file(
 	input: 'samples.dox.in',
-	output: 'samples.dox', 
+	output: 'samples.dox',
 	configuration: {
 		'examples_subpages': '\n'.join(examples_subpages_entries),
 		'utils_subpages': '\n'.join(utils_subpages_entries),
