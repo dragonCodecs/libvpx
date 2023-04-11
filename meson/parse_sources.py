@@ -140,27 +140,30 @@ def make_to_meson(target: str, paths: list[str]):
         for component, component_sources in components.items():
             default_sources = component_sources.pop('', [])
 
-            f.write(f'{component}_{source_type}sources = files(\n')
+            file_opening = '[' if source_type == 'data_' else 'files('
+            file_closing = ']' if source_type == 'data_' else ')'
+
+            f.write(f'{component}_{source_type}sources = {file_opening}\n')
             for source in default_sources:
                 if '$' in source:
                     print ('Warning: skipping %s' % source)
                     continue
                 f.write(f"\t'{source}',\n")
-            f.write(')\n\n')
+            f.write('{file_closing}\n\n')
 
             f.write(f'{component}_{source_type}optional_sources = {{\n')
             for label in sorted (component_sources):
                 if label in skipped:
-                    f.write(f"\t# '{label.lower()}' : files(\n")
+                    f.write(f"\t# '{label.lower()}' : {file_opening}\n")
                 else:
-                    f.write(f"\t'{label.lower()}' : files(\n")
+                    f.write(f"\t'{label.lower()}' : {file_opening}\n")
                 l = len (component_sources[label])
                 for i, source in enumerate(component_sources[label]):
                     if '$' in source:
                         print ('Warning: skipping %s' % source)
                         continue
                     f.write(f"\t\t'{source}'{',' if i + 1 < l else ''}\n")
-                f.write('\t),\n')
+                f.write(f'\t{file_closing},\n')
             f.write('}\n\n')
 
     if has_not_generated:
@@ -181,34 +184,34 @@ def make_to_meson(target: str, paths: list[str]):
         meson_file.write(content)
 
 paths = {
-    'vp8': [
-        'vp8/vp8_common.mk',
-        'vp8/vp8cx.mk',
-        'vp8/vp8dx.mk',
-    ],
-    'vp9': [
-        'vp9/vp9_common.mk',
-        'vp9/vp9cx.mk',
-        'vp9/vp9dx.mk',
-    ],
-    'vpx_dsp': [
-        'vpx_dsp/vpx_dsp.mk',
-    ],
-    'vpx_scale': [
-        'vpx_scale/vpx_scale.mk',
-    ],
-    'vpx_mem': [
-        'vpx_mem/vpx_mem.mk',
-    ],
-    'vpx_ports': [
-        'vpx_ports/vpx_ports.mk',
-    ],
-    'vpx': [
-        'vpx/vpx_codec.mk',
-    ],
-    'vpx_util': [
-        'vpx_util/vpx_util.mk',
-    ],
+    # 'vp8': [
+    #     'vp8/vp8_common.mk',
+    #     'vp8/vp8cx.mk',
+    #     'vp8/vp8dx.mk',
+    # ],
+    # 'vp9': [
+    #     'vp9/vp9_common.mk',
+    #     'vp9/vp9cx.mk',
+    #     'vp9/vp9dx.mk',
+    # ],
+    # 'vpx_dsp': [
+    #     'vpx_dsp/vpx_dsp.mk',
+    # ],
+    # 'vpx_scale': [
+    #     'vpx_scale/vpx_scale.mk',
+    # ],
+    # 'vpx_mem': [
+    #     'vpx_mem/vpx_mem.mk',
+    # ],
+    # 'vpx_ports': [
+    #     'vpx_ports/vpx_ports.mk',
+    # ],
+    # 'vpx': [
+    #     'vpx/vpx_codec.mk',
+    # ],
+    # 'vpx_util': [
+    #     'vpx_util/vpx_util.mk',
+    # ],
     'test': [
         'test/test.mk',
         'test/test-data.mk',

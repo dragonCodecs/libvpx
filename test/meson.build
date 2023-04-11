@@ -62,7 +62,7 @@ libvpx_test_optional_sources = {
 		# 'pp_filter_test.cc' # MANUAL
 	),
 	'sse2' : files(
-		'vp8_denoiser_sse2_test.cc'
+		# 'vp8_denoiser_sse2_test.cc' # MANUAL
 	),
 	'vp8_decoder' : files(
 		# 'vp8_decrypt_test.cc' # MANUAL
@@ -218,11 +218,11 @@ rc_interface_test_headers_optional_sources = {
 	),
 }
 
-libvpx_test_data_data_sources = files(
-)
+libvpx_test_data_data_sources = [
+]
 
 libvpx_test_data_data_optional_sources = {
-	'encoders' : files(
+	'encoders' : [
 		'hantro_collage_w352h288.yuv',
 		'hantro_collage_w352h288_nv12.yuv',
 		'hantro_odd.yuv',
@@ -242,8 +242,8 @@ libvpx_test_data_data_optional_sources = {
 		'park_joy_90p_8_422.y4m',
 		'park_joy_90p_8_444.y4m',
 		'park_joy_90p_8_440.yuv'
-	),
-	'vp8_decoder' : files(
+	],
+	'vp8_decoder' : [
 		'vp80-00-comprehensive-001.ivf',
 		'vp80-00-comprehensive-001.ivf.md5',
 		'vp80-00-comprehensive-002.ivf',
@@ -378,8 +378,8 @@ libvpx_test_data_data_optional_sources = {
 		'invalid-vp80-00-comprehensive-018.ivf.2kf_0x6.ivf.res',
 		'invalid-vp80-00-comprehensive-s17661_r01-05_b6-.ivf',
 		'invalid-vp80-00-comprehensive-s17661_r01-05_b6-.ivf.res'
-	),
-	'vp9_decoder' : files(
+	],
+	'vp9_decoder' : [
 		'vp90-2-00-quantizer-00.webm',
 		'vp90-2-00-quantizer-00.webm.md5',
 		'vp90-2-00-quantizer-01.webm',
@@ -1083,8 +1083,8 @@ libvpx_test_data_data_optional_sources = {
 		'vp90-2-22-svc_1280x720_3.ivf.md5',
 		'vp90-2-22-svc_1280x720_1.webm',
 		'vp90-2-22-svc_1280x720_1.webm.md5'
-	),
-	'vp9_encoder' : files(
+	],
+	'vp9_encoder' : [
 		'desktop_credits.y4m',
 		'niklas_1280_720_30.y4m',
 		'noisy_clip_640_360.y4m',
@@ -1093,22 +1093,22 @@ libvpx_test_data_data_optional_sources = {
 		'niklas_640_480_30.yuv',
 		'bus_352x288_420_f20_b8.yuv',
 		'niklas_1280_720_30.yuv',
-		# 'desktop_640_360_30.yuv', # MANUAL
-		# 'kirland_640_480_30.yuv', # MANUAL
-		# 'macmarcomoving_640_480_30.yuv', # MANUAL
-		# 'macmarcostationary_640_480_30.yuv', # MANUAL
-		# 'niklas_1280_720_30.yuv', # MANUAL
-		# 'tacomanarrows_640_480_30.yuv', # MANUAL
-		# 'tacomasmallcameramovement_640_480_30.yuv', # MANUAL
-		# 'thaloundeskmtg_640_480_30.yuv' # MANUAL
-	),
+		'desktop_640_360_30.yuv',
+		'kirland_640_480_30.yuv',
+		'macmarcomoving_640_480_30.yuv',
+		'macmarcostationary_640_480_30.yuv',
+		'niklas_1280_720_30.yuv',
+		'tacomanarrows_640_480_30.yuv',
+		'tacomasmallcameramovement_640_480_30.yuv',
+		'thaloundeskmtg_640_480_30.yuv'
+	],
 }
 
 if features.get('webm_io', false) # MANUAL
 	libvpx_test_optional_sources += {
 		'decoders' : libvpx_test_optional_sources['decoders'] + files(
-			'../third_party/libwebm/mkvparser/mkvparser.cc',
-			'../third_party/libwebm/mkvparser/mkvreader.cc',
+			# '../third_party/libwebm/mkvparser/mkvparser.cc',
+			# '../third_party/libwebm/mkvparser/mkvreader.cc',
 			'../webmdec.cc',
 			'vp9_skip_loopfilter_test.cc',
 		)
@@ -1116,9 +1116,9 @@ if features.get('webm_io', false) # MANUAL
 
 	libvpx_test_headers_optional_sources += {
 		'decoders' : libvpx_test_headers_optional_sources['decoders'] + files(
-			'../third_party/libwebm/mkvparser/mkvparser.h',
-			'../third_party/libwebm/mkvparser/mkvreader.h',
-			'../third_party/libwebm/common/webmids.h',
+			# '../third_party/libwebm/mkvparser/mkvparser.h',
+			# '../third_party/libwebm/mkvparser/mkvreader.h',
+			# '../third_party/libwebm/common/webmids.h',
 			'../webmdec.h',
 			'webm_video_source.h',
 		)
@@ -1303,8 +1303,8 @@ if not features.get('shared', false) # MANUAL
 		}
 
 		if features.get('vp9_encoder', false)
-			simple_encode_test_optional_sources = {
-				'rate_ctrl' : files(
+			simple_encode_test_optional_sources += {
+				'rate_ctrl' : simple_encode_test_optional_sources['rate_ctrl']+ files(
 					'simple_encode_test.cc',
 				)
 			}
@@ -1327,10 +1327,11 @@ if not features.get('shared', false) # MANUAL
 	endif
 
 	test_intra_pred_speed_sources += files(
+		'test_intra_pred_speed.cc',
 		'../md5_utils.c',
 	)
 
-	test_intra_pred_speed_headers_sources += files(
+	test_intra_pred_speed_headers_sources = files(
 		'../md5_utils.h',
 	)
 
@@ -1359,7 +1360,7 @@ endif
 
 if features.get('vp9_highbitdepth', false)
 	libvpx_test_data_data_optional_sources += {
-		'vp9_decoder' : libvpx_test_data_data_optional_sources['vp9_decoder'] + files(
+		'vp9_decoder' : libvpx_test_data_data_optional_sources['vp9_decoder'] + [
 			'vp92-2-20-10bit-yuv420.webm',
 			'vp92-2-20-10bit-yuv420.webm.md5',
 			'vp92-2-20-12bit-yuv420.webm',
@@ -1376,17 +1377,17 @@ if features.get('vp9_highbitdepth', false)
 			'vp93-2-20-10bit-yuv444.webm.md5',
 			'vp93-2-20-12bit-yuv444.webm',
 			'vp93-2-20-12bit-yuv444.webm.md5',
-		)
+		]
 	}
 endif
 
 if features.get('decode_perf_tests', false)
 	libvpx_test_data_data_optional_sources += {
-		'vp9_encoder' : libvpx_test_data_data_optional_sources['vp9_encoder'] + files(
+		'vp9_encoder' : libvpx_test_data_data_optional_sources['vp9_encoder'] + [
 			# Encode / Decode test
 			'niklas_1280_720_30.yuv',
-		),
-		'vp9_decoder' : libvpx_test_data_data_optional_sources['vp9_decoder'] + files(
+		],
+		'vp9_decoder' : libvpx_test_data_data_optional_sources['vp9_decoder'] + [
 			# BBB VP9 streams
 			'vp90-2-bbb_426x240_tile_1x1_180kbps.webm',
 			'vp90-2-bbb_640x360_tile_1x2_337kbps.webm',
@@ -1409,13 +1410,13 @@ if features.get('decode_perf_tests', false)
 			'vp90-2-tos_1280x534_tile_1x4_1306kbps.webm',
 			'vp90-2-tos_1280x534_tile_1x4_fpm_952kbps.webm',
 			'vp90-2-tos_1920x800_tile_1x4_fpm_2335kbps.webm',
-		)
+		]
 	}
 endif
 
 if features.get('encode_perf_tests', false)
 	libvpx_test_data_data_optional_sources += {
-		'vp9_encoder' : libvpx_test_data_data_optional_sources['vp9_encoder'] + files(
+		'vp9_encoder' : libvpx_test_data_data_optional_sources['vp9_encoder'] + [
 			'desktop_640_360_30.yuv',
 			'kirland_640_480_30.yuv',
 			'macmarcomoving_640_480_30.yuv',
@@ -1424,8 +1425,166 @@ if features.get('encode_perf_tests', false)
 			'tacomanarrows_640_480_30.yuv',
 			'tacomasmallcameramovement_640_480_30.yuv',
 			'thaloundeskmtg_640_480_30.yuv',
-		)
+		]
 	}
 endif
 
 #### --- END GENERATED --- ####
+
+optional_sources = get_variable('libvpx_test_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		libvpx_test_sources += comp_sources
+	endif
+endforeach
+
+optional_sources = get_variable('libvpx_test_headers_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		libvpx_test_headers_sources += comp_sources
+	endif
+endforeach
+
+optional_sources = get_variable('rc_interface_test_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		rc_interface_test_sources += comp_sources
+	endif
+endforeach
+
+optional_sources = get_variable('simple_encode_test_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		simple_encode_test_sources += comp_sources
+	endif
+endforeach
+
+optional_sources = get_variable('libvpx_test_data_data_optional_sources', {})
+foreach comp_name, comp_sources : optional_sources
+	if features.get(comp_name, false)
+		libvpx_test_data_data_sources += comp_sources
+	endif
+endforeach
+
+##
+## libvpx test directives
+##
+
+libvpx_test_deps = [libvpx_dep, gtest_dep]
+
+if features.get('webm_io', false)
+	libvpx_test_deps += libwebm_dep
+endif
+
+LIBVPX_TEST_BIN = executable(
+	'test_libvpx',
+	libvpx_test_sources,
+	extra_files: libvpx_test_headers_sources,
+	dependencies: libvpx_test_deps
+)
+
+libvpx_test_data_url = 'https://storage.googleapis.com/downloads.webmproject.org/test_data/libvpx/@0@'
+
+libvpx_test_data = []
+libvpx_test_data_dedup = configuration_data()
+
+foreach f : libvpx_test_data_data_sources
+	if not libvpx_test_data_dedup.get(f, false)
+		libvpx_test_data += custom_target(
+			f,
+			command: [curl_exe, '-S', '-s', '--retry', '1', '-L', '-o', '@OUTPUT@', libvpx_test_data_url.format(f)],
+			output: f
+		)
+		libvpx_test_data_dedup.set(f, true)
+	endif
+endforeach
+
+test_data_manifest = files(
+	'test-data.sha1'
+)
+
+testdata = custom_target(
+	'testdata',
+	command: [check_test_data, '@INPUT@'],
+	output: 'testdata.txt',
+	input: test_data_manifest,
+	depends: libvpx_test_data,
+	capture: true
+)
+
+if test_intra_pred_speed_sources.length() > 0
+	TEST_INTRA_PRED_SPEED_BIN = executable(
+		'test_intra_pred_speed',
+		test_intra_pred_speed_sources,
+		extra_files: test_intra_pred_speed_headers_sources,
+		dependencies: [libvpx_dep, gtest_dep]
+	)
+	test('test_intra_pred_speed', TEST_INTRA_PRED_SPEED_BIN)
+endif
+
+if features.get('encoders', false) and rc_interface_test_sources.length() > 0
+	RC_INTERFACE_TEST_BIN = executable(
+		'test_rc_interface',
+		rc_interface_test_sources,
+		extra_files: rc_interface_test_headers_sources,
+		link_with: vpxrc_lib,
+		dependencies: [libvpx_dep, gtest_dep]
+	)
+
+	test(
+		'test_rc_interface',
+		RC_INTERFACE_TEST_BIN,
+		depends: testdata,
+	)
+endif
+
+if simple_encode_test_sources.length() > 0
+	SIMPLE_ENCODE_TEST_BIN = executable(
+		'test_simple_encode',
+		simple_encode_test_sources,
+		link_with: simple_encode_lib,
+		dependencies: [libvpx_dep, gtest_dep]
+	)
+	test(
+		'test_simple_encode',
+		SIMPLE_ENCODE_TEST_BIN,
+		depends: testdata,
+	)
+endif
+
+NUM_SHARDS = 10
+
+foreach i : range(0, NUM_SHARDS)
+	test('test_shard.@0@'.format(i), LIBVPX_TEST_BIN,
+		env: {
+			'GTEST_SHARD_INDEX': '@0@'.format(i),
+			'GTEST_TOTAL_SHARDS': '@0'.format(NUM_SHARDS),
+		}
+	)
+endforeach
+
+##
+## vpxdec/vpxenc tests.
+##
+test(
+	'utiltest_vpxdec',
+	vpxdec_sh,
+	args: ['--test-data-path', meson.current_build_dir(), '--bin-path', meson.current_build_dir()],
+	depends: testdata,
+)
+test(
+	'utiltest_vpxenc',
+	vpxenc_sh,
+	args: ['--test-data-path', meson.current_build_dir(), '--bin-path', meson.current_build_dir()],
+	depends: testdata,
+)
+
+##
+## Example tests.
+##
+test(
+	'exampletest',
+	examples_sh,
+	args: ['--test-data-path', meson.current_build_dir(), '--bin-path', meson.current_build_dir()],
+	depends: testdata,
+)

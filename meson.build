@@ -1151,6 +1151,8 @@ if features.get('multithread', false)
 		dependencies: threads_dep
 	)
 		extra_libs += threads_dep
+	else
+		features.set('pthread_h', false)
 	endif
 endif
 
@@ -1801,6 +1803,7 @@ libvpx_dep = declare_dependency(
 
 meson.override_dependency('libvpx', libvpx_dep)
 
+
 pkg = import('pkgconfig')
 
 pkg.generate(
@@ -1810,16 +1813,75 @@ pkg.generate(
 )
 
 if features.get('examples', false)
-subdir('examples')
+	subdir('examples')
 endif
 
 if features.get('tools', false)
-subdir('tools')
+	subdir('tools')
 endif
 
-# if features.get('unit_tests', false)
-# 	subdir('test')
-# endif
+if features.get('unit_tests', false)
+	if features.get('encoders', false)
+		rc_rtc_headers = files(
+			'vpx/vp8.h',
+			'vpx/vp8cx.h',
+			'vpx/vpx_ext_ratectrl.h',
+			'vpx/internal/vpx_ratectrl_rtc.h',
+		)
+
+		rc_rtc_srcs = []
+
+		if features.get('vp9_encoder', false)
+			rc_rtc_headers += files(
+				'vp9/ratectrl_rtc.h',
+			)
+			rc_rtc_srcs += files(
+				'vp9/ratectrl_rtc.cc',
+			)
+		endif
+		if features.get('vp8_encoder', false)
+			rc_rtc_headers += files(
+				'vp8/vp8_ratectrl_rtc.h',
+			)
+			rc_rtc_srcs += files(
+				'vp8/vp8_ratectrl_rtc.cc',
+			)
+		endif
+		vpxrc_lib = static_library(
+			'vpxrc',
+			rc_rtc_srcs,
+			c_args: c_args,
+			link_args: link_args,
+			extra_files: codec_headers + rc_rtc_headers,
+			dependencies: extra_libs + libvpx_dep,
+		)
+	endif
+
+	if features.get('vp9_encoder', false) and features.get('rate_ctrl', false)
+		simple_encode_lib = static_library(
+			'simple_encode',
+			codec_srcs + files(
+				'vp9/simple_encode.cc',
+				'ivfenc.c'
+			),
+			c_args: c_args,
+			link_args: link_args,
+			extra_files: codec_headers + files(
+				'vp9/simple_encode.h',
+				'ivfenc.h',
+			),
+			dependencies: extra_libs + libvpx_dep,
+		)
+	endif
+
+	curl_exe = find_program('curl', required: false, disabler: true)
+	check_test_data = find_program('meson/check_test_data.py', required: true)
+	vpxdec_sh = find_program('test/vpxdec.sh', required: false, disabler: true)
+	vpxenc_sh = find_program('test/vpxenc.sh', required: false, disabler: true)
+	examples_sh = find_program('test/examples.sh', required: false, disabler: true)
+
+	subdir('test')
+endif
 
 if features.get('docs', false)
 	libs_doxy = configure_file(
