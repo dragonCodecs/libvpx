@@ -1710,8 +1710,7 @@ subdir('vp9')
 
 foreach symbol, input_file : codec_rtcds
 	rtcd_filename = '@0@.h'.format(symbol)
-	rtcd_h = custom_target(
-		rtcd_filename,
+	rtcd_h = configure_file(
 		command: rtcd_h_template + ['--sym=@0@'.format(symbol), '@INPUT1@'],
 		input: [config_mk, input_file],
 		output: rtcd_filename,
