@@ -6,14 +6,15 @@
 from argparse import ArgumentParser
 from pathlib import Path
 import re
-from warnings import warn
 
 def parse_options(lines: list[str]) -> list[str]:
     options = []
     for line in lines:
         if option := re.match(r'#define\s+(VPX_ARCH|HAVE|CONFIG)(_[A-Z0-9_]+)\s+([01])', line):
             if option.group(3) == '1':
-                options.append(f'{option.group(1)}{option.group(2)}')
+                options.append(f'{option.group(1)}{option.group(2)}=yes\n')
+        elif option := re.match(r'#define\s+(VERSION_STRING)\s+"(.+)"', line):
+            options.append(f'{option.group(1)}={option.group(2).strip()}')
     return options
 
 
@@ -29,17 +30,23 @@ def print_webm_license(prefix='', suffix='') -> list[str]:
     ]
 
 
-def create_config_mk_file(options: list[str], output: Path):
+def create_config_mk_file(input: list[str], output: Path):
     with open(output, 'w', encoding='utf-8') as f:
         lines = print_webm_license(prefix='##')
-        lines += [f'{option}=yes\n' for option in options]
+        lines += parse_options(input)
         f.writelines(lines)
 
 if __name__ == '__main__':
     parser = ArgumentParser()
-    parser.add_argument('input', type=Path, help='Path to configuration header')
     parser.add_argument('output', type=Path, help='Path to config.mk')
+    parser.add_argument('input', nargs='+', type=Path, help='Path to configuration headers')
     args = parser.parse_args()
-    with open(args.input, 'r', encoding='utf-8') as f:
-        options = parse_options(f.readlines())
-        create_config_mk_file(options, args.output)
+    
+    lines = []
+
+    inputs: list[Path] = args.input
+    for input in inputs:
+        with input.open('r', encoding='utf-8') as f:
+            lines.extend(f.readlines())
+
+    create_config_mk_file(lines, args.output)

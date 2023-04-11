@@ -1537,12 +1537,27 @@ endif
 
 dist_dir = '@0@-@1@'.format(dist_dir, version_str)
 
+version_cfgdata = configuration_data()
+
+#since they'll be used as integers below make sure they are or force to 0
+version_cfgdata.set('VERSION_MAJOR', major_version)
+version_cfgdata.set('VERSION_MINOR', minor_version)
+version_cfgdata.set('VERSION_PATCH', patch_version)
+version_cfgdata.set_quoted('VERSION_EXTRA', extra_version)
+version_cfgdata.set('VERSION_PACKED', '((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))')
+version_cfgdata.set_quoted('VERSION_STRING_NOSP', version_str)
+version_cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_str))
+
+vpx_version_h = configure_file(
+	output: 'vpx_version.h',
+	configuration: version_cfgdata
+)
+
 config_mk_generator = find_program('meson/transform_config.py', required: true)
 
-config_mk = custom_target(
-	'config.mk',
-	command: [config_mk_generator, '@INPUT@', '@OUTPUT@'],
-	input: vpx_config_h,
+config_mk = configure_file(
+	command: [config_mk_generator, '@OUTPUT@', '@INPUT@'],
+	input: [vpx_config_h, vpx_version_h],
 	output: 'config.mk',
 )
 
@@ -1677,22 +1692,6 @@ generate_component_dox = find_program('meson/generate_component_dox.py', require
 # Add assembler dependencies for configuration.
 #
 codec_srcs += config_asm
-
-version_cfgdata = configuration_data()
-
-#since they'll be used as integers below make sure they are or force to 0
-version_cfgdata.set('VERSION_MAJOR', major_version)
-version_cfgdata.set('VERSION_MINOR', minor_version)
-version_cfgdata.set('VERSION_PATCH', patch_version)
-version_cfgdata.set_quoted('VERSION_EXTRA', extra_version)
-version_cfgdata.set('VERSION_PACKED', '((VERSION_MAJOR<<16)|(VERSION_MINOR<<8)|(VERSION_PATCH))')
-version_cfgdata.set_quoted('VERSION_STRING_NOSP', version_str)
-version_cfgdata.set_quoted('VERSION_STRING', ' @0@'.format(version_str))
-
-vpx_version_h = configure_file(
-	output: 'vpx_version.h',
-	configuration: version_cfgdata
-)
 
 codec_srcs += vpx_version_h
 
