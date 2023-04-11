@@ -1479,6 +1479,9 @@ endif
 LIBVPX_TEST_BIN = executable(
 	'test_libvpx',
 	libvpx_test_sources,
+	c_args: c_args,
+	cpp_args: cpp_args,
+	link_args: link_args,
 	extra_files: libvpx_test_headers_sources,
 	dependencies: libvpx_test_deps
 )
@@ -1516,6 +1519,9 @@ if test_intra_pred_speed_sources.length() > 0
 	TEST_INTRA_PRED_SPEED_BIN = executable(
 		'test_intra_pred_speed',
 		test_intra_pred_speed_sources,
+		c_args: c_args,
+		cpp_args: cpp_args,
+		link_args: link_args,
 		extra_files: test_intra_pred_speed_headers_sources,
 		dependencies: [libvpx_dep, gtest_dep]
 	)
@@ -1526,6 +1532,9 @@ if features.get('encoders', false) and rc_interface_test_sources.length() > 0
 	RC_INTERFACE_TEST_BIN = executable(
 		'test_rc_interface',
 		rc_interface_test_sources,
+		c_args: c_args,
+		cpp_args: cpp_args,
+		link_args: link_args,
 		extra_files: rc_interface_test_headers_sources,
 		link_with: vpxrc_lib,
 		dependencies: [libvpx_dep, gtest_dep]
@@ -1542,6 +1551,9 @@ if simple_encode_test_sources.length() > 0
 	SIMPLE_ENCODE_TEST_BIN = executable(
 		'test_simple_encode',
 		simple_encode_test_sources,
+		c_args: c_args,
+		cpp_args: cpp_args,
+		link_args: link_args,
 		link_with: simple_encode_lib,
 		dependencies: [libvpx_dep, gtest_dep]
 	)

@@ -1305,6 +1305,7 @@ if tgt_cc == 'msvs'
 	endif
 	features.set('INLINE', '__inline')
 	c_args += ['-D_CRT_SECURE_NO_WARNINGS', '-D_CRT_SECURE_NO_DEPRECATE']
+	cpp_args += ['-D_CRT_SECURE_NO_WARNINGS', '-D_CRT_SECURE_NO_DEPRECATE']
 endif
 
 # Other toolchain specific defaults
@@ -1852,6 +1853,7 @@ if features.get('unit_tests', false)
 			'vpxrc',
 			rc_rtc_srcs,
 			c_args: c_args,
+			cpp_args: cpp_args,
 			link_args: link_args,
 			extra_files: codec_headers + rc_rtc_headers,
 			dependencies: extra_libs + libvpx_dep,
