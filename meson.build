@@ -955,16 +955,16 @@ elif tgt_isa.startswith('x86')
 			disable_exts = true
 		else
 			if ext == 'avx512'
-				exts = ['avx512', 'avx512f', 'avx512cd', 'avx512bw', 'avx512dq', 'avx512vl']
+				exts = ['avx512f', 'avx512cd', 'avx512bw', 'avx512dq', 'avx512vl']
 				foreach feature : exts
-					if features.get('gcc', false) and features.get(feature, true) and not c.has_argument('-m@0@'.format(feature))
-						rtcd_options += ['--disable-@0@'.format(feature)]
+					if features.get('gcc', false) and features.get(ext, true) and not c.has_argument('-m@0@'.format(feature))
+						rtcd_options += ['--disable-@0@'.format(ext)]
 					else
-						if features.get(feature, true) # soft_enabled
-							if not features.has(feature)
-								message('\tenabling @0@'.format(feature))
+						if features.get(ext, true) # soft_enabled
+							if not features.has(ext)
+								message('\tenabling @0@'.format(ext))
 							endif
-							features.set(feature, true)
+							features.set(ext, true)
 						endif
 					endif
 				endforeach
@@ -984,9 +984,11 @@ elif tgt_isa.startswith('x86')
 				endif
 			else
 				# use the shortened version for the flag: sse4_1 -> sse4
-				exts = [ext]
+				exts = []
 				if ext.contains('_')
 					exts += [ext.split('_')[0]]
+				else
+					exts += [ext]
 				endif
 				opt = ext
 				foreach feature : exts
@@ -1614,24 +1616,24 @@ if tgt_cc == 'msvs'
 else
 	arch_flags = {
 		# x86[_64]
-		'mmx': '-mmmx',
-		'sse2': '-msse2',
-		'sse3': '-msse3',
-		'ssse3': '-mssse3',
-		'sse4_1': '-msse4.1',
-		'avx': '-mavx',
-		'avx2': '-mavx2',
-		'avx512': '-mavx512f -mavx512cd -mavx512bw -mavx512dq -mavx512vl',
+		'mmx': ['-mmmx'],
+		'sse2': ['-msse2'],
+		'sse3': ['-msse3'],
+		'ssse3': ['-mssse3'],
+		'sse4_1': ['-msse4.1'],
+		'avx': ['-mavx'],
+		'avx2': ['-mavx2'],
+		'avx512': ['-mavx512f', '-mavx512cd', '-mavx512bw', '-mavx512dq', '-mavx512vl'],
 
 		# POWER
-		'vsx' : '-maltivec -mvsx',
+		'vsx' : ['-maltivec', '-mvsx'],
 
 		# MIPS
-		'msa': '-mmsa',
+		'msa': ['-mmsa'],
 
 		# LOONGARCH
-		'lsx': '-mlsx',
-		'lasx': '-mlasx',
+		'lsx': ['-mlsx'],
+		'lasx': ['-mlasx'],
 	}
 endif
 
