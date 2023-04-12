@@ -1469,7 +1469,7 @@ if git.found()
 	endif
 endif
 
-python_exe = find_program('python', required: true)
+python_exe = find_program('python3', version: '>= 3.8', required: true)
 
 major_version = bare_version.get(0, 0)
 minor_version = bare_version.get(1, 0)
@@ -1799,11 +1799,11 @@ endif
 
 libvpx_dep = declare_dependency(
 	link_with: libvpx,
+	dependencies: extra_libs,
 	include_directories: include_directories('.'),
 )
 
 meson.override_dependency('libvpx', libvpx_dep)
-
 
 pkg = import('pkgconfig')
 
