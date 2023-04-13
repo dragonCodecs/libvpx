@@ -457,7 +457,7 @@ foreach feature: disable_features
 		endif
 		message('\tdisabling @0@'.format(feature))
 	endif
-	features.set(feature, true)
+	features.set(feature, false)
 endforeach
 
 foreach feature: force_disable_features
