@@ -176,7 +176,7 @@ vp9_cx_optional_sources = {
 	),
 	'sse2' : files(
 		'encoder/x86/vp9_quantize_sse2.c',
-		'encoder/x86/vp9_highbd_block_error_intrin_sse2.c',
+		# 'encoder/x86/vp9_highbd_block_error_intrin_sse2.c', # MANUAL
 		'encoder/x86/vp9_dct_intrin_sse2.c',
 		# 'encoder/x86/vp9_denoiser_sse2.c' # MANUAL
 	),
@@ -354,15 +354,7 @@ vp9_cx_asm_optional_sources = {
 	),
 }
 
-if features.get('temporal_denoising', false)
-	vp9_cx_optional_sources += {
-		'neon' : vp9_cx_optional_sources['neon'] + files(
-			'encoder/arm/neon/vp9_error_neon.c',
-		),
-	}
-endif
-
-if features.get('vp9_highbitdepth', false)
+if features.get('vp9_temporal_denoising', false)
 	vp9_cx_optional_sources += {
 		'sse2' : vp9_cx_optional_sources['sse2'] + files(
 			'encoder/x86/vp9_denoiser_sse2.c',
@@ -371,8 +363,19 @@ if features.get('vp9_highbitdepth', false)
 			'encoder/arm/neon/vp9_denoiser_neon.c',
 		),
 	}
+endif
+
+if features.get('vp9_highbitdepth', false)
+	vp9_cx_optional_sources += {
+		'sse2' : vp9_cx_optional_sources['sse2'] + files(
+			'encoder/x86/vp9_highbd_block_error_intrin_sse2.c',
+		),
+	}
 else
 	vp9_cx_optional_sources += {
+		'neon' : vp9_cx_optional_sources['neon'] + files(
+			'encoder/arm/neon/vp9_error_neon.c',
+		),
 		'msa' : vp9_cx_optional_sources['msa'] + files(
 			'encoder/mips/msa/vp9_fdct4x4_msa.c',
 			'encoder/mips/msa/vp9_fdct8x8_msa.c',
