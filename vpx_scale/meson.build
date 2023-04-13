@@ -35,8 +35,7 @@ optional_sources = get_variable('scale_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if not features.get(comp_name, false)
 		continue
-	endif
-	if ARCH_EXT_LIST.contains(comp_name)
+	elif ARCH_EXT_LIST.contains(comp_name)
 		codec_arch_srcs += {
 			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
 		}
@@ -50,8 +49,7 @@ optional_sources = get_variable('scale_headers_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if not features.get(comp_name, false)
 		continue
-	endif
-	if ARCH_EXT_LIST.contains(comp_name)
+	elif ARCH_EXT_LIST.contains(comp_name)
 		codec_arch_headers += {
 			comp_name: codec_arch_headers.get(comp_name, []) + comp_sources
 		}

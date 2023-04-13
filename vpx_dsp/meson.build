@@ -1151,8 +1151,7 @@ optional_sources = get_variable('dsp_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if not features.get(comp_name, false)
 		continue
-	endif
-	if ARCH_EXT_LIST.contains(comp_name)
+	elif ARCH_EXT_LIST.contains(comp_name)
 		codec_arch_srcs += {
 			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
 		}
@@ -1165,8 +1164,7 @@ optional_sources = get_variable('dsp_asm_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if not features.get(comp_name, false)
 		continue
-	endif
-	if ARCH_EXT_LIST.contains(comp_name)
+	elif ARCH_EXT_LIST.contains(comp_name)
 		transformed_sources = comp_sources
 		if asm_conversion_exe.found()
 			transformed_sources = asm_transformer.process(comp_sources)
@@ -1184,8 +1182,7 @@ optional_sources = get_variable('dsp_headers_optional_sources', {})
 foreach comp_name, comp_sources : optional_sources
 	if not features.get(comp_name, false)
 		continue
-	endif
-	if ARCH_EXT_LIST.contains(comp_name)
+	elif ARCH_EXT_LIST.contains(comp_name)
 		codec_arch_srcs += {
 			comp_name: codec_arch_srcs.get(comp_name, []) + comp_sources
 		}
