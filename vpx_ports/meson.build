@@ -69,21 +69,19 @@ if features.get('x86_64', false) # MANUAL
 	}
 endif
 
-ports_asm_optional_sources += { # MANUAL
-	'x86': files(
-		'x86_abi_support.asm'
-	),
-	'x86_64': files(
-		'x86_abi_support.asm'
-	),
-}
-
+# Do NOT compile these ASM files with MSVC! It will cause a linker deadlock
+# because the PDBs are empty:
+# https://developercommunity.visualstudio.com/t/MSVC-deadlockscrashes-when-linking-a-Me/10336032
+# The original configure script doesn't fail because they're ignored
+# in the ASM_INCLUDES variable.
 ports_headers_optional_sources += { # MANUAL
 	'x86': files(
-		'x86.h'
+		'x86.h',
+		'x86_abi_support.asm',
 	),
 	'x86_64': files(
-		'x86.h'
+		'x86.h',
+		'x86_abi_support.asm',
 	),
 	'mips': files(
 		'asmdefs_mmi.h'

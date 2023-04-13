@@ -1694,7 +1694,6 @@ generate_component_dox = find_program('meson/generate_component_dox.py', require
 #
 # Add assembler dependencies for configuration.
 #
-codec_srcs += config_asm
 
 codec_srcs += vpx_version_h
 
