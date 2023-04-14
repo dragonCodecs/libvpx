@@ -1,21 +1,9 @@
-#!/usr/bin/env python
-# Copyright (C) 2018 Mathieu Duponchelle <mathieu@centricular.com>
-# Copyright (C) 2023 L. E. Segovia <amy@amyspark.me>
-#
-# This file is part of the FFmpeg Meson build
-#
-# This library is free software; you can redistribute it and/or
-# modify it under the terms of the GNU Lesser General Public
-# License as published by the Free Software Foundation; either
-# version 2.1 of the License, or (at your option) any later version.
-#
-# This library is distributed in the hope that it will be useful,
-# but WITHOUT ANY WARRANTY; without even the implied warranty of
-# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the GNU
-# Lesser General Public License for more details.
-#
-# You should have received a copy of the GNU Lesser General Public
-# License along with this library; if not, see <http://www.gnu.org/licenses/>.
+#!/usr/bin/env python3
+
+# SPDX-FileNotice: This file is based on the FFmpeg Meson build version
+# SPDX-FileCopyrightText: 2018 Mathieu Duponchelle <mathieu@centricular.com>
+# SPDX-FileCopyrightText: 2023 L. E. Segovia <amy@amyspark.me>
+# SPDX-License-Identifier: LGPL-2.1-or-later
 
 import io
 import os
@@ -191,34 +179,34 @@ def make_to_meson(target: str, paths: list[str]):
 		meson_file.write(content)
 
 paths = {
-	# 'vp8': [
-	#     'vp8/vp8_common.mk',
-	#     'vp8/vp8cx.mk',
-	#     'vp8/vp8dx.mk',
-	# ],
-	# 'vp9': [
-	#     'vp9/vp9_common.mk',
-	#     'vp9/vp9cx.mk',
-	#     'vp9/vp9dx.mk',
-	# ],
-	# 'vpx_dsp': [
-	#     'vpx_dsp/vpx_dsp.mk',
-	# ],
-	# 'vpx_scale': [
-	#     'vpx_scale/vpx_scale.mk',
-	# ],
-	# 'vpx_mem': [
-	#     'vpx_mem/vpx_mem.mk',
-	# ],
-	# 'vpx_ports': [
-	#     'vpx_ports/vpx_ports.mk',
-	# ],
-	# 'vpx': [
-	#     'vpx/vpx_codec.mk',
-	# ],
-	# 'vpx_util': [
-	#     'vpx_util/vpx_util.mk',
-	# ],
+	'vp8': [
+	    'vp8/vp8_common.mk',
+	    'vp8/vp8cx.mk',
+	    'vp8/vp8dx.mk',
+	],
+	'vp9': [
+	    'vp9/vp9_common.mk',
+	    'vp9/vp9cx.mk',
+	    'vp9/vp9dx.mk',
+	],
+	'vpx_dsp': [
+	    'vpx_dsp/vpx_dsp.mk',
+	],
+	'vpx_scale': [
+	    'vpx_scale/vpx_scale.mk',
+	],
+	'vpx_mem': [
+	    'vpx_mem/vpx_mem.mk',
+	],
+	'vpx_ports': [
+	    'vpx_ports/vpx_ports.mk',
+	],
+	'vpx': [
+	    'vpx/vpx_codec.mk',
+	],
+	'vpx_util': [
+	    'vpx_util/vpx_util.mk',
+	],
 	'test': [
 		'test/test.mk',
 		'test/test-data.mk',

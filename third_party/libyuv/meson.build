@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 L. E. Segovia <amy@amyspark.me>
+# SPDX-License-Identifier: BSD-3-Clause
+
 libyuv_includes = files(
 	'include/libyuv/convert.h',
 	'include/libyuv/convert_argb.h',

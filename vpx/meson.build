@@ -1,3 +1,6 @@
+# SPDX-FileCopyrightText: 2023 L. E. Segovia <amy@amyspark.me>
+# SPDX-License-Identifier: BSD-3-Clause
+
 # vpx_codec.mk
 
 #### --- GENERATED --- ####
