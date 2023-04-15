@@ -1705,7 +1705,7 @@ if features.get('static', false) and features.get('shared', false)
 		link_whole: codec_arch_libs,
 		version: soversion,
 		vs_module_defs: vpx_def,
-		install: true,
+		install: features.get('install_libs'),
 	)
 else
 	libvpx = library(
@@ -1717,7 +1717,7 @@ else
 		link_whole: codec_arch_libs,
 		version: soversion,
 		vs_module_defs: vpx_def,
-		install: true,
+		install: features.get('install_libs'),
 	)
 endif
 
