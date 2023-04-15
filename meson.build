@@ -296,6 +296,7 @@ IGNORE_MESON_BUILTINS = [
 	'small',
 	'static_msvcrt',
 	'debug_libs',
+	'install_srcs',
 ]
 
 MESON_OPTIONS = [
@@ -304,7 +305,6 @@ MESON_OPTIONS = [
 	'install_docs',
 	'install_bins',
 	'install_libs',
-	'install_srcs',
 	'libs',
 	'examples',
 	'tools',
@@ -1423,7 +1423,6 @@ foreach var : VAR_LIST
 	cfgdata.set10(var.to_upper(), features.get(var, false))
 endforeach
 
-
 version_str = 'v@0@'.format(meson.project_version())
 bare_version = meson.project_version().split('.')
 
@@ -1467,51 +1466,6 @@ if features.get('win_arm64_neon_h_workaround', false)
 		copy: true
 	)
 endif
-
-dist_dir = 'vpx'
-
-foreach cf: CODEC_FAMILIES
-	if features.get('@0@_encoder', false) and features.get('@0@_decoder', false)
-		dist_dir = '@0@-@1@'.format(dist_dir, cf)
-	elif features.get('@0@_encoder', false)
-		dist_dir = '@0@-@1@cx'.format(dist_dir, cf)
-	elif features.get('@0@_decoder', false)
-		dist_dir = '@0@-@1@dx'.format(dist_dir, cf)
-	endif
-endforeach
-
-if features.get('debug_libs', false)
-	dist_dir = '@0@-debug'.format(dist_dir)
-endif
-
-if features.get('codec_srcs', false)
-	dist_dir = '@0@-src'.format(dist_dir)
-endif
-
-if not features.get('postproc', false) and not features.get('vp9_postproc', false)
-	dist_dir = '@0@-nopost'.format(dist_dir)
-endif
-
-if not features.get('multithread', false)
-	dist_dir = '@0@-nomt'.format(dist_dir)
-endif
-
-if not features.get('install_docs', false)
-	dist_dir = '@0@-nodocs'.format(dist_dir)
-endif
-
-dist_dir = '@0@-@1@-@2@'.format(dist_dir, tgt_isa, tgt_os)
-
-if tgt_os.startswith('win')
-	if features.get('static_msvcrt', false)
-		dist_dir = '@0@-mt'.format(dist_dir)
-	else
-		dist_dir = '@0@-md'.format(dist_dir)
-	endif
-	dist_dir = '@0@-@1@'.format(dist_dir, tgt_cc)
-endif
-
-dist_dir = '@0@-@1@'.format(dist_dir, version_str)
 
 version_cfgdata = configuration_data()
 

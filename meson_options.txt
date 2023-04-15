@@ -12,7 +12,6 @@ option('thumb', type: 'combo', choices: ['unset', 'true', 'false'], description:
 option('install_docs', type: 'combo', choices: ['unset', 'true', 'false'], value: 'true', description: 'control whether docs are installed')
 option('install_bins', type: 'combo', choices: ['unset', 'true', 'false'], value: 'true', description: 'control whether binaries are installed')
 option('install_libs', type: 'combo', choices: ['unset', 'true', 'false'], value: 'true', description: 'control whether libraries are installed')
-option('install_srcs', type: 'combo', choices: ['unset', 'true', 'false'], description: 'control whether sources are installed')
 option('libs', type: 'combo', choices: ['unset', 'true', 'false'], value: 'true', description: 'libraries')
 option('examples', type: 'combo', choices: ['unset', 'true', 'false'], value: 'false', description: 'examples')
 option('tools', type: 'combo', choices: ['unset', 'true', 'false'], value: 'true', description: 'tools')

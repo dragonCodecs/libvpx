@@ -89,6 +89,7 @@ MESON_HANDLED_OPTIONS = [
 	'static',
 	'small',
 	'static_msvcrt',
+	'install_srcs',
 ]
 
 def filter_meson_handled_options(pair) -> bool:
