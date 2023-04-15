@@ -410,41 +410,43 @@ endif
 # Documentation Rules
 #
 
-doxfiles = []
-examples_subpages_entries = []
-utils_subpages_entries = []
+if features.get('install_docs', false)
+	doxfiles = []
+	examples_subpages_entries = []
+	utils_subpages_entries = []
 
-foreach page, description: examples_subpages
-	doxfiles += configure_file(
-		command: [generate_component_dox, '--component', 'example', '--output', '@OUTPUT@', '@INPUT@'],
-		input: get_variable('@0@_srcs'.format(page))[0],
-		output: '@0@.dox'.format(page),
+	foreach page, description: examples_subpages
+		doxfiles += configure_file(
+			command: [generate_component_dox, '--component', 'example', '--output', '@OUTPUT@', '@INPUT@'],
+			input: get_variable('@0@_srcs'.format(page))[0],
+			output: '@0@.dox'.format(page),
+		)
+
+		examples_subpages_entries += '    - \subpage example_@0@ @1@'.format(page, description)
+	endforeach
+
+	foreach page, description: utils_subpages
+		doxfiles += configure_file(
+			command: [generate_component_dox, '--component', 'example', '--output', '@OUTPUT@', '@INPUT@'],
+			input: get_variable('@0@_srcs'.format(page))[0],
+			output: '@0@.dox'.format(page),
+		)
+
+		utils_subpages_entries += '    - \subpage example_@0@ @1@'.format(page, description)
+	endforeach
+
+	samples_dox = configure_file(
+		input: 'samples.dox.in',
+		output: 'samples.dox',
+		configuration: {
+			'examples_subpages': '\n'.join(examples_subpages_entries),
+			'utils_subpages': '\n'.join(utils_subpages_entries),
+		}
 	)
 
-	examples_subpages_entries += '    - \subpage example_@0@ @1@'.format(page, description)
-endforeach
-
-foreach page, description: utils_subpages
-	doxfiles += configure_file(
-		command: [generate_component_dox, '--component', 'example', '--output', '@OUTPUT@', '@INPUT@'],
-		input: get_variable('@0@_srcs'.format(page))[0],
-		output: '@0@.dox'.format(page),
+	examples_doxy = configure_file(
+		command: [doxy_template, '--sections', 'samples', '--output', '@OUTPUT@', '@INPUT@'],
+		input: [samples_dox] + doxfiles,
+		output: 'examples.doxy',
 	)
-
-	utils_subpages_entries += '    - \subpage example_@0@ @1@'.format(page, description)
-endforeach
-
-samples_dox = configure_file(
-	input: 'samples.dox.in',
-	output: 'samples.dox',
-	configuration: {
-		'examples_subpages': '\n'.join(examples_subpages_entries),
-		'utils_subpages': '\n'.join(utils_subpages_entries),
-	}
-)
-
-examples_doxy = configure_file(
-	command: [doxy_template, '--sections', 'samples', '--output', '@OUTPUT@', '@INPUT@'],
-	input: [samples_dox] + doxfiles,
-	output: 'examples.doxy',
-)
+endif

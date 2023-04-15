@@ -40,26 +40,28 @@ tools_subpages_entries = []
 # Documentation Rules
 #
 
-foreach page, description: tools_subpages
-	doxfiles += configure_file(
-		command: [generate_component_dox, '--component', 'tools', '--output', '@OUTPUT@', '@INPUT@'],
-		input: get_variable('@0@_srcs'.format(page))[0],
-		output: '@0@.dox'.format(page),
+if features.get('install_docs', false)
+	foreach page, description: tools_subpages
+		doxfiles += configure_file(
+			command: [generate_component_dox, '--component', 'tools', '--output', '@OUTPUT@', '@INPUT@'],
+			input: get_variable('@0@_srcs'.format(page))[0],
+			output: '@0@.dox'.format(page),
+		)
+
+		tools_subpages_entries += '    - \subpage tools_@0@ @1@'.format(page, description)
+	endforeach
+
+	tools_dox = configure_file(
+		input: 'tools.dox.in',
+		output: 'tools.dox',
+		configuration: {
+			'tools_subpages': '\n'.join(tools_subpages_entries),
+		}
 	)
 
-	tools_subpages_entries += '    - \subpage tools_@0@ @1@'.format(page, description)
-endforeach
-
-tools_dox = configure_file(
-	input: 'tools.dox.in',
-	output: 'tools.dox',
-	configuration: {
-		'tools_subpages': '\n'.join(tools_subpages_entries),
-	}
-)
-
-tools_doxy = configure_file(
-	command: [doxy_template, '--sections', 'tools', '--output', '@OUTPUT@', '@INPUT@'],
-	input: [tools_dox] + doxfiles,
-	output: 'tools.doxy',
-)
+	tools_doxy = configure_file(
+		command: [doxy_template, '--sections', 'tools', '--output', '@OUTPUT@', '@INPUT@'],
+		input: [tools_dox] + doxfiles,
+		output: 'tools.doxy',
+	)
+endif
