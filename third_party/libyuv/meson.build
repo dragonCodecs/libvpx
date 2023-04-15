@@ -38,8 +38,7 @@ libyuv_srcs = files(
 libyuv = static_library(
 	'vpx_yuv',
 	libyuv_srcs,
-	cpp_args: cpp_args + libyuv_cpp_args,
-	link_args: link_args,
+	cpp_args: libyuv_cpp_args,
 	extra_files: libyuv_includes,
 	include_directories: libyuv_include_directories,
 )

@@ -76,9 +76,6 @@ endif
 vpx_examples_common = static_library(
 	'vpx_examples_common',
 	vpx_examples_common_sources,
-	c_args: c_args,
-	cpp_args: cpp_args,
-	link_args: link_args,
 	extra_files: vpx_examples_common_headers,
 	dependencies: examples_deps,
 )
@@ -235,9 +232,6 @@ if features.get('decoders', false)
 	vpxdec = executable(
 		'vpxdec',
 		vpxdec_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vpxdec_headers,
 		dependencies: vpxdec_deps,
 		install: features.get('install_bins', false),
@@ -258,9 +252,6 @@ if features.get('encoders', false)
 	vpxenc = executable(
 		'vpxenc',
 		vpxenc_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vpxenc_headers,
 		dependencies: vpxenc_deps,
 		install: features.get('install_bins', false),
@@ -275,9 +266,6 @@ if features.get('vp9_encoder', false)
 	vp9_spatial_svc_encoder = executable(
 		'vp9_spatial_svc_encoder',
 		vp9_spatial_svc_encoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vp9_spatial_svc_encoder_headers,
 		dependencies: examples_deps,
 	)
@@ -293,9 +281,6 @@ if not features.get('shared', false)
 		files(
 			'resize_util.c'
 		),
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		dependencies: examples_deps,
 	)
 endif
@@ -304,9 +289,6 @@ if features.get('encoders', false)
 	vpx_temporal_svc_encoder = executable(
 		'vpx_temporal_svc_encoder',
 		vpx_temporal_svc_encoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vpx_temporal_svc_encoder_headers,
 		dependencies: examples_deps,
 	)
@@ -314,9 +296,6 @@ if features.get('encoders', false)
 	decode_to_md5 = executable(
 		'decode_to_md5',
 		decode_to_md5_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: decode_to_md5_headers,
 		dependencies: examples_deps,
 	)
@@ -324,9 +303,6 @@ if features.get('encoders', false)
 	simple_encoder = executable(
 		'simple_encoder',
 		simple_encoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: simple_encoder_headers,
 		dependencies: examples_deps,
 	)
@@ -334,9 +310,6 @@ if features.get('encoders', false)
 	vp9_lossless_encoder = executable(
 		'vp9_lossless_encoder',
 		vp9_lossless_encoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vp9_lossless_encoder_headers,
 		dependencies: examples_deps,
 	)
@@ -344,9 +317,6 @@ if features.get('encoders', false)
 	twopass_encoder = executable(
 		'twopass_encoder',
 		twopass_encoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: twopass_encoder_headers,
 		dependencies: examples_deps,
 	)
@@ -354,9 +324,6 @@ if features.get('encoders', false)
 	set_maps = executable(
 		'set_maps',
 		set_maps_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: set_maps_headers,
 		dependencies: examples_deps,
 	)
@@ -375,9 +342,6 @@ if features.get('decoders', false)
 	simple_decoder = executable(
 		'simple_decoder',
 		simple_decoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: simple_decoder_headers,
 		dependencies: examples_deps,
 	)
@@ -385,9 +349,6 @@ if features.get('decoders', false)
 	postproc = executable(
 		'postproc',
 		postproc_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: postproc_headers,
 		dependencies: examples_deps,
 	)
@@ -395,9 +356,6 @@ if features.get('decoders', false)
 	decode_with_drops = executable(
 		'decode_with_drops',
 		decode_with_drops_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: postproc_headers,
 		dependencies: examples_deps,
 	)
@@ -413,9 +371,6 @@ if features.get('vp8_encoder', false)
 	vp8cx_set_ref = executable(
 		'vp8cx_set_ref',
 		vp8cx_set_ref_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vp8cx_set_ref_headers,
 		dependencies: examples_deps,
 	)
@@ -429,9 +384,6 @@ if features.get('vp9_encoder', false) and features.get('decoders', false)
 	vp9cx_set_ref = executable(
 		'vp9cx_set_ref',
 		vp9cx_set_ref_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vp9cx_set_ref_headers,
 		dependencies: examples_deps,
 	)
@@ -445,9 +397,6 @@ if features.get('multi_res_encoding', false) and features.get('libyuv', false)
 	vp8_multi_resolution_encoder = executable(
 		'vp8_multi_resolution_encoder',
 		vp8_multi_resolution_encoder_srcs,
-		c_args: c_args,
-		cpp_args: cpp_args,
-		link_args: link_args,
 		extra_files: vp8_multi_resolution_encoder_headers,
 		dependencies: examples_deps + libyuv_dep,
 	)

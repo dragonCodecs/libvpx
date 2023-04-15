@@ -19,9 +19,8 @@ endif
 libgtest = static_library(
 	'gtest',
 	gtest_srcs,
-	c_args: c_args + gtest_flags,
-	cpp_args: cpp_args + gtest_flags,
-	link_args: link_args,
+	c_args: gtest_flags,
+	cpp_args: gtest_flags,
 	include_directories: gtest_includes,
 	dependencies: extra_libs,
 )

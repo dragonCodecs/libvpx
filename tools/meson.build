@@ -24,8 +24,6 @@ tiny_ssim_headers = files(
 tiny_ssim = executable(
 	'tiny_ssim',
 	tiny_ssim_srcs,
-	c_args: c_args,
-	cpp_args: cpp_args,
 	link_args: link_args,
 	extra_files: tiny_ssim_headers,
 	dependencies: libvpx_dep,

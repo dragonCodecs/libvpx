@@ -39,7 +39,7 @@ libwebm = static_library(
 	libwebm_common_srcs + libwebm_muxer_srcs + libwebm_parser_srcs,
 	extra_files: libwebm_common_includes + libwebm_muxer_headers + libwebm_parser_headers,
 	include_directories: include_directories('.'),
-	cpp_args: cpp_args + [
+	cpp_args: [
 		'-D__STDC_CONSTANT_MACROS',
 		'-D__STDC_FORMAT_MACROS',
 		'-D__STDC_LIMIT_MACROS'
