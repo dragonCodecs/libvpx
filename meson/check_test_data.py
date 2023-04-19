@@ -1,7 +1,8 @@
 #!/usr/bin/env python3
 
+# SPDX-FileNotice: This file is based on the FFmpeg Meson build version
 # SPDX-FileCopyrightText: 2023 L. E. Segovia <amy@amyspark.me>
-# SPDX-License-Identifier: LGPL-2.1-or-later
+# SPDX-License-Identifier: BSD-3-Clause
 
 from argparse import ArgumentParser, FileType
 from pathlib import Path
