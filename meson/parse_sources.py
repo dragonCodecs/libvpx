@@ -3,7 +3,7 @@
 # SPDX-FileNotice: This file is based on the FFmpeg Meson build version
 # SPDX-FileCopyrightText: 2018 Mathieu Duponchelle <mathieu@centricular.com>
 # SPDX-FileCopyrightText: 2023 L. E. Segovia <amy@amyspark.me>
-# SPDX-License-Identifier: MIT
+# SPDX-License-Identifier: BSD-3-Clause
 
 import io
 import os
