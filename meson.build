@@ -570,7 +570,6 @@ if tgt_isa == 'aarch64'
 	tgt_isa = 'arm64'
 elif tgt_isa == 'arm'
 	arm_arch = c.get_define('__ARM_ARCH')
-	_M_ARM 
 	if arm_arch == ''
 		arm_arch = c.get_define('_M_ARM')
 	endif
@@ -1586,7 +1585,7 @@ if asm_conversion_exe.found()
 	)
 endif
 
-if features.get('x86', false) or features.get('x86_64')
+if features.get('x86', false) or features.get('x86_64', false)
 	config_asm = configure_file(
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@', '--format=yasm'],
 		input: vpx_config_h,
@@ -1605,7 +1604,6 @@ elif asm_conversion_exe.found()
 	)
 else
 	config_asm = configure_file(
-		'vpx_config.asm',
 		command: [config_asm_generator, '@INPUT@', '@OUTPUT@'],
 		input: vpx_config_h,
 		output: 'vpx_config.asm',
