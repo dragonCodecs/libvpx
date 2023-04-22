@@ -62,10 +62,10 @@ debian-container-build@x86_64@full:
 .build:
   stage: 'build'
   script:
-    - meson setup build ${MESON_OPTIONS}
-    - meson compile -C build
-    - meson test -C build
-    - meson install -C build
+    - meson setup mesonbuild ${MESON_OPTIONS}
+    - meson compile -C mesonbuild
+    - meson test -C mesonbuild
+    - meson install -C mesonbuild
   artifacts:
     paths:
       - build/meson-logs/
@@ -154,8 +154,8 @@ with deps@i386:
     # Environment variables substitutions is done by PowerShell before calling
     # cmd.exe, that's why we use $env:FOO instead of %FOO%
     - cmd.exe /C "C:\BuildTools\Common7\Tools\VsDevCmd.bat -host_arch=amd64 -arch=$env:ARCH &&
-        meson setup build $env:MESON_ARGS &&
-        meson compile -C build"
+        meson setup mesonbuild $env:MESON_ARGS &&
+        meson compile -C mesonbuild"
 
 vs2019:
   extends: '.build windows'
@@ -173,16 +173,6 @@ vs2019 x86:
   stage: 'build'
   variables:
     ARCH: 'x86'
-  artifacts:
-    paths:
-      - build1/meson-logs/
-  # MSVC is known to get stuck on x86 due to empty Nasm PDBs
-  # I fixed this for the Meson build, but in any case...
-  # see https://developercommunity.visualstudio.com/t/MSVC-deadlockscrashes-when-linking-a-Me/10336032
-  timeout: 30 minutes
-  script:
-    - cmd.exe /C "C:\BuildTools\Common7\Tools\VsDevCmd.bat -host_arch=amd64 -arch=$env:ARCH &&
-        meson compile -C build $env:MESON_ARGS"
 
 vs2019 arm64 cross:
   extends: '.build windows'
@@ -210,9 +200,9 @@ vs2019 arm64 cross:
     # Get ninja
     - pip3 install -U ninja
   script:
-    - CERT_PATH=$(python3 -m certifi) && export SSL_CERT_FILE=${CERT_PATH} && export REQUESTS_CA_BUNDLE=${CERT_PATH} && meson setup build
-    - meson compile -C build
-    - meson test -C build
+    - CERT_PATH=$(python3 -m certifi) && export SSL_CERT_FILE=${CERT_PATH} && export REQUESTS_CA_BUNDLE=${CERT_PATH} && meson setup mesonbuild
+    - meson compile -C mesonbuild
+    - meson test -C mesonbuild
 
 macOS x86_64:
   extends: '.build darwin'
@@ -246,9 +236,9 @@ iOS arm64 cross:
       strip     = '$(xcrun --find --sdk iphoneos strip)'
       pkgconfig = 'false'
       EOF
-    - CERT_PATH=$(python3 -m certifi) && export SSL_CERT_FILE=${CERT_PATH} && export REQUESTS_CA_BUNDLE=${CERT_PATH} && meson --cross-file=ios-cross-file.txt build
-    - ninja -C build
-    - meson test -C build
+    - CERT_PATH=$(python3 -m certifi) && export SSL_CERT_FILE=${CERT_PATH} && export REQUESTS_CA_BUNDLE=${CERT_PATH} && meson setup mesonbuild --cross-file=ios-cross-file.txt
+    - meson compile -C mesonbuild
+    - meson test -C mesonbuild
 
 .build android:
   image: 'registry.freedesktop.org/gstreamer/cerbero/android:2022-09-22.0'
@@ -287,8 +277,8 @@ iOS arm64 cross:
       strip     = '$TOOLCHAIN/bin/${ARCH}-linux-${ANDROID_HOST}-strip'
       pkgconfig = 'false'
       EOF
-    - meson --cross-file android-cross-file.txt build
-    - ninja -C build
+    - meson setup mesonbuild --cross-file android-cross-file.txt
+    - meson compile -C mesonbuild
 
 android arm64 cross:
   extends: '.build android'
