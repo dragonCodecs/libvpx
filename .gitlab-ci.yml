@@ -254,6 +254,7 @@ iOS arm64 cross:
     ANDROID_NDK: '/android/ndk'
     ANDROID_API: '21'
     TOOLCHAIN: "$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64"
+    NASM: "/usr/bin/nasm"
   before_script:
     - dnf install -y python3-pip binutils nasm gcc ninja-build perl-interpreter
     - pip3 install -U meson
@@ -266,15 +267,23 @@ iOS arm64 cross:
       cpu = '$ARCH'
       endian = 'little'
 
+      [constants]
+      toolchain = '$TOOLCHAIN'
+      clang_arch = '$CLANG_ARCH'
+      arch = '$ARCH'
+      android_host = '$ANDROID_HOST'
+      android_api = '$ANDROID_API'
+
       [properties]
       sys_root = '$ANDROID_NDK/sysroot'
 
       [binaries]
-      ar        = '$TOOLCHAIN/bin/${ARCH}-linux-${ANDROID_HOST}-ar'
-      c         = '$TOOLCHAIN/bin/${CLANG_ARCH}-linux-${ANDROID_HOST}${ANDROID_API}-clang'
-      cpp       = '$TOOLCHAIN/bin/${CLANG_ARCH}-linux-${ANDROID_HOST}${ANDROID_API}-clang++'
-      ranlib    = '$TOOLCHAIN/bin/${ARCH}-linux-${ANDROID_HOST}-ranlib'
-      strip     = '$TOOLCHAIN/bin/${ARCH}-linux-${ANDROID_HOST}-strip'
+      ar        = toolchain + '/bin/' + arch + '-linux-' + android_host + '-ar'
+      c         = toolchain + '/bin/' + clang_arch + '-linux-' + android_host + android_api + '-clang'
+      cpp       = toolchain + '/bin/' + clang_arch + '-linux-' + android_host + android_api + '-clang++'
+      ranlib    = toolchain + '/bin/' + arch + '-linux-' + android_host + '-ranlib'
+      strip     = toolchain + '/bin/' + arch + '-linux-' + android_host + '-strip'
+      nasm      = '$NASM'
       pkgconfig = 'false'
       EOF
     - meson setup mesonbuild --cross-file android-cross-file.txt
