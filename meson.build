@@ -555,7 +555,7 @@ elif ['darwin', 'ios', 'tvos'].contains(tgt_os)
 			tgt_os = 'iphonesimulator'
 		endif
 	endif
-elif tgt_os == 'linux' or tgt_os == 'android' or tgt_os.endswith('bsd')
+elif tgt_os == 'linux' or tgt_os.endswith('bsd')
 	tgt_os = 'linux'
 elif tgt_os == 'sunos'
 	tgt_os = 'solaris'
@@ -1160,8 +1160,19 @@ endif
 
 # glibc needs these
 if features.get('linux', false)
-	warning('Enable transparent large-file-support; let me know if this breaks something, especially on Android!')
-	c_flags += ['-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64']
+	add_project_arguments(
+		'-D_LARGEFILE_SOURCE', '-D_FILE_OFFSET_BITS=64',
+		language: ['c', 'cpp']
+	)
+elif tgt_os == 'android'
+	api_level = c.get_define('__ANDROID_API__')
+	if api_level.version_compare('< 24') and tgt_isa == 'armv7'
+		warning('Disabling transparent large-file-support for Android API < 24 on armv7-a')
+		add_project_arguments(
+			'-U_FILE_OFFSET_BITS',
+			language: ['c', 'cpp']
+		)
+	endif
 endif
 
 if features.get('gcc', false)
