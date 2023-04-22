@@ -51,8 +51,12 @@ foreach t : all_targets
 endforeach
 
 # we don't use diff in Meson.
-
-perl_exe = find_program('perl', required: true)
+perl_executables = ['perl']
+# Adding Meson overrides manually.
+if host_machine.system() == 'windows'
+	perl_executables += ['perl_windows_exe']
+endif
+perl_exe = find_program(perl_executables, required: true)
 
 doxygen = find_program('doxygen', required: false, disabler: true)
 
@@ -1004,6 +1008,14 @@ elif tgt_isa.startswith('x86')
 
 	nasm_exe = find_program('nasm', required: false)
 	yasm_exe = find_program('yasm', required: false)
+	# Adding Meson overrides manually.
+	if not nasm_exe.found() and not yasm_exe.found()
+		if host_machine.system() == 'windows'
+			nasm_exe = find_program('nasm_windows_exe')
+		elif host_machine.system() == 'darwin'
+			nasm_exe = find_program('nasm_macos_exe')
+		endif
+	endif
 	if nasm_exe.found()
 		# Apple ships version 0.98 of nasm through at least Xcode 6. Revisit
 		# this check if they start shipping a compatible version.
@@ -1022,8 +1034,11 @@ elif tgt_isa.startswith('x86')
 				error('unexpected nasm version string: @0@'.format(out))
 			endif
 		endif
-	elif yasm_exe.found()
-		as = 'yasm'
+	else
+		
+		if yasm_exe.found()
+			as = 'yasm'
+		endif
 	endif
 
 	if as == 'auto'
