@@ -268,7 +268,7 @@ iOS arm64 cross:
     TOOLCHAIN: "$ANDROID_NDK/toolchains/llvm/prebuilt/linux-x86_64"
     NASM: "/usr/bin/nasm"
   before_script:
-    - dnf install -y python3-pip binutils nasm gcc ninja-build perl-interpreter
+    - dnf install -y python3-pip binutils nasm gcc ninja-build perl-core
     - pip3 install -U meson
   script:
     - |
