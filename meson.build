@@ -480,7 +480,7 @@ if features.get('coefficient_range_checking', false)
 	warn('coefficient-range-checking is for decoders only, disabling encoders')
 	encoders_features = ['vp8_encoder', 'vp9_encoder']
 	foreach feature: encoders_features # soft_disable
-		if not feature.get(feature, false) # ! enabled
+		if not features.get(feature, false) # ! enabled
 			if not features.has(feature) # disabled
 				message('\tdisabling @0@'.format(feature))
 			endif
@@ -619,7 +619,7 @@ elif tgt_isa == 'loongarch64'
 	features.set('loongarch', true)
 	loongson_features = ['lsx', 'lasx']
 	foreach feature : loongson_features
-		if feature.get(feature, true)
+		if features.get(feature, true)
 			if not feature.has(feature)
 				message('\tenabling @0@'.format(feature))
 			endif
@@ -646,7 +646,7 @@ if tgt_isa == 'arm' or tgt_isa == 'arm64'
 		# Only enable neon_asm when neon is also enabled.
 		if features.get('neon', false)
 			feature = 'neon_asm'
-			if feature.get(feature, true)
+			if features.get(feature, true)
 				if not features.has(feature)
 					message('\tenabling @0@'.format(feature))
 				endif
@@ -724,7 +724,7 @@ if tgt_isa == 'arm' or tgt_isa == 'arm64'
 		# See later for why we allow shared builds.
 		# features.set('static', true)
 		feature = 'unit_tests'
-		if feature.get(feature, true)
+		if features.get(feature, true)
 			if not feature.has(feature)
 				message('\tenabling @0@'.format(feature))
 			endif
@@ -751,7 +751,7 @@ if tgt_isa == 'arm' or tgt_isa == 'arm64'
 					warning('\tneon disabled: upgrade Xcode (need v6.3+)')
 					if features.get('neon_asm', false)
 						feature = 'neon_asm'
-						if not feature.get(feature, false)
+						if not features.get(feature, false)
 							if not features.has(feature)
 								message('\tdisabling @0@'.format(feature))
 							endif
@@ -795,7 +795,7 @@ elif tgt_isa.startswith('mips')
 		elif tune_cpu.startswith('loongson3')
 			if c.has_argument('-march=loongson3a')
 				feature = 'mmi'
-				if feature.get(feature, true)
+				if features.get(feature, true)
 					if not feature.has(feature)
 						message('\tenabling @0@'.format(feature))
 					endif
@@ -807,7 +807,7 @@ elif tgt_isa.startswith('mips')
 
 			if c.has_argument('-mmsa')
 				feature = 'msa'
-				if feature.get(feature, true)
+				if features.get(feature, true)
 					if not feature.has(feature)
 						message('\tenabling @0@'.format(feature))
 					endif
@@ -822,7 +822,7 @@ elif tgt_isa.startswith('mips')
 
 		if features.get('mmi', false) or features.get('msa', false)
 			feature = 'runtime_cpu_detect'
-			if feature.get(feature, true)
+			if features.get(feature, true)
 				if not feature.has(feature)
 					message('\tenabling @0@'.format(feature))
 				endif
@@ -835,7 +835,7 @@ elif tgt_isa.startswith('mips')
 			# The new mips functions in libyuv do not build
 			# with the toolchains we currently use for testing.
 			feature = 'libyuv'
-			if not feature.get(feature, false) # ! enabled
+			if not features.get(feature, false) # ! enabled
 				if not features.has(feature) # disabled
 					message('\tdisabling @0@'.format(feature))
 				endif
@@ -860,7 +860,7 @@ elif tgt_isa == 'ppc64' and target_machine.endian() == 'little'
 elif tgt_isa.startswith('x86')
 	if tgt_os == 'android'
 		feature = 'realtime_only'
-		if feature.get(feature, true)
+		if features.get(feature, true)
 			if not features.has(feature)
 				message('\tenabling @0@'.format(feature))
 			endif
