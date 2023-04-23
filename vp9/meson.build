@@ -43,9 +43,9 @@ vp9_common_optional_sources = {
 		# 'common/mips/msa/vp9_mfqe_msa.c' # MANUAL
 	),
 	'neon' : files(
-		# 'common/arm/neon/vp9_iht4x4_add_neon.c', # MANUAL
-		# 'common/arm/neon/vp9_iht8x8_add_neon.c', # MANUAL
-		# 'common/arm/neon/vp9_iht16x16_add_neon.c', # MANUAL
+		'common/arm/neon/vp9_iht4x4_add_neon.c',
+		'common/arm/neon/vp9_iht8x8_add_neon.c',
+		'common/arm/neon/vp9_iht16x16_add_neon.c',
 		# 'common/arm/neon/vp9_highbd_iht4x4_add_neon.c', # MANUAL
 		# 'common/arm/neon/vp9_highbd_iht8x8_add_neon.c', # MANUAL
 		# 'common/arm/neon/vp9_highbd_iht16x16_add_neon.c' # MANUAL
@@ -83,9 +83,6 @@ if not features.get('vp9_highbitdepth', false) # MANUAL
 else
 	vp9_common_optional_sources += {
 		'neon': vp9_common_optional_sources['neon'] + files(
-			'common/arm/neon/vp9_iht4x4_add_neon.c',
-			'common/arm/neon/vp9_iht8x8_add_neon.c',
-			'common/arm/neon/vp9_iht16x16_add_neon.c',
 			'common/arm/neon/vp9_highbd_iht4x4_add_neon.c',
 			'common/arm/neon/vp9_highbd_iht8x8_add_neon.c',
 			'common/arm/neon/vp9_highbd_iht16x16_add_neon.c'

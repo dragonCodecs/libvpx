@@ -633,9 +633,9 @@ if tgt_os == 'solaris'
 	extra_libs += c.find_library('posix4', required: true)
 endif
 
-if tgt_isa == 'arm' or tgt_isa == 'aarch64'
+if tgt_isa == 'arm' or tgt_isa == 'arm64'
 	feature = 'neon'
-	if feature.get(feature, true)
+	if features.get(feature, true)
 		if not features.has(feature)
 			message('\tenabling @0@'.format(feature))
 		endif
@@ -671,7 +671,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 		endif
 
 		asm_conversion_exe = find_program('build/make/ads2gas.pl', required: true)
-		asm_conversion_cmd = [asm_conversion_exe]
+		asm_conversion_cmd = []
 		as_sfx = '.S'
 
 		if tgt_os == 'windows'
@@ -692,7 +692,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 		if tgt_isa == 'armv7'
 			asm_conversion_exe = find_program('build/make/ads2armasm_ms.pl', required: true)
-			asm_conversion_cmd = [asm_conversion_exe]
+			asm_conversion_cmd = []
 			as_sfx = '.masm'
 			features.set('multithread', false)
 			features.set('unit_tests', false)
@@ -742,7 +742,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 				if features.get('neon', false) and xcode_version.get(1, '').version_compare('>=6.3')
 					feature = 'neon'
-					if not feature.get(feature, false)
+					if not features.get(feature, false)
 						if not features.has(feature)
 							message('\tdisabling @0@'.format(feature))
 						endif
@@ -765,7 +765,7 @@ if tgt_isa == 'arm' or tgt_isa == 'aarch64'
 
 		# Darwin toolchain and embed-bitcode options are Meson handled.
 		asm_conversion_exe = find_program('build/make/ads2gas_apple.pl', required: true)
-		asm_conversion_cmd = [asm_conversion_exe]
+		asm_conversion_cmd = []
 	elif tgt_os == 'linux'
 		features.set('linux', true)
 	endif
@@ -1601,12 +1601,9 @@ codec_arch_libs = []
 config_asm_generator = find_program('meson/transform_config_asm.py', required: true)
 
 if asm_conversion_exe.found()
-	asm_conversion_cmd = [
-		find_program('meson/stdinout_wrapper.py', required: true),
-		'--input', '@INPUT@', '--output', '@OUTPUT@'
-	] + asm_conversion_cmd
 	asm_transformer = generator(
-		arguments: asm_conversion_cmd,
+		find_program('meson/stdinout_wrapper.py', required: true),
+		arguments: ['--input', '@INPUT@', '--output', '@OUTPUT@', asm_conversion_exe.full_path()] + asm_conversion_cmd,
 		output: '@0@.@1@'.format('@BASENAME@', as_sfx)
 	)
 endif
@@ -1624,7 +1621,7 @@ elif asm_conversion_exe.found()
 		output: 'vpx_config.adstmp',
 	)
 	config_asm = configure_file(
-		command: asm_conversion_cmd,
+		command: [asm_conversion_exe] + asm_conversion_cmd,
 		input: ads_config_asm,
 		output: 'vpx_config.asm',
 	)

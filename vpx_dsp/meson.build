@@ -457,7 +457,7 @@ if not features.get('postproc', false) or not features.get('vp9_postproc', false
 			'mips/add_noise_msa.c',
 			'mips/deblock_msa.c',
 		),
-		'neon' : dsp_optional_sources['msa'] + files(
+		'neon' : dsp_optional_sources['neon'] + files(
 			'arm/deblock_neon.c',
 		),
 		'sse2' : dsp_optional_sources['sse2'] + files(
