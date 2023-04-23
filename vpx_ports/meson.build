@@ -12,6 +12,18 @@ ports_optional_sources = {
 	'mmx' : files(
 		# 'emms_mmx.c' # MANUAL
 	),
+	'arm' : files(
+		'arm_cpudetect.c',
+	),
+	'ppc' : files(
+		'ppc_cpudetect.c',
+	),
+	'mips' : files(
+		'mips_cpudetect.c',
+	),
+	'loongarch' : files(
+		'loongarch_cpudetect.c',
+	),
 }
 
 ports_headers_sources = files(
@@ -27,6 +39,18 @@ ports_headers_sources = files(
 )
 
 ports_headers_optional_sources = {
+	'arm' : files(
+		'arm.h',
+	),
+	'ppc' : files(
+		'ppc.h',
+	),
+	'mips' : files(
+		'mips.h',
+	),
+	'loongarch' : files(
+		'loongarch.h',
+	),
 }
 
 ports_asm_sources = files(
