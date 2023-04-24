@@ -89,11 +89,11 @@ debian-container-build@x86_64@full:
     - apt-get update
     - apt-get install --yes nasm
 
-no external deps:
-  extends: '.build nodeps'
+# no external deps:
+#   extends: '.build nodeps'
 
-with deps:
-  extends: '.build withdeps'
+# with deps:
+#   extends: '.build withdeps'
 
 with deps nasm:
   extends: '.build withdepsandnasm'
@@ -110,22 +110,24 @@ with deps nasm:
       perl
       git
 
-no external@i386:
-  extends:
-    - '.build nodeps'
-    - '.build@i386.common'
-  before_script:
-    - apt-get update
-    - apt-get install --yes ${DEPENDENCIES}
+# UNCOMMENT when the following is fixed:
+# https://github.com/mesonbuild/meson/issues/11726
+# no external@i386:
+#   extends:
+#     - '.build nodeps'
+#     - '.build@i386.common'
+#   before_script:
+#     - apt-get update
+#     - apt-get install --yes ${DEPENDENCIES}
 
-with deps@i386:
-  extends:
-    - '.build withdeps'
-    - '.build@i386.common'
-  before_script:
-    - echo "deb-src http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
-    - apt-get update
-    - apt-get install --yes ${DEPENDENCIES}
+# with deps@i386:
+#   extends:
+#     - '.build withdeps'
+#     - '.build@i386.common'
+#   before_script:
+#     - echo "deb-src http://deb.debian.org/debian bookworm main" >> /etc/apt/sources.list
+#     - apt-get update
+#     - apt-get install --yes ${DEPENDENCIES}
 
 .build windows:
   image: 'registry.freedesktop.org/gstreamer/gstreamer/amd64/windows:2022-09-23.0-main'
