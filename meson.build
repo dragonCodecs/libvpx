@@ -1007,12 +1007,16 @@ elif tgt_isa.startswith('x86')
 	endforeach
 
 	nasm_exe = find_program('nasm', required: false)
-	# Removing Yasm support because Meson adds optimization flags
-	# which it doesn't support.
-	# https://github.com/mesonbuild/meson/issues/11726
-	# yasm_exe = find_program('yasm', required: false)
+	if meson.version().version_compare('> 1.1.0')
+		yasm_exe = find_program('yasm', required: false)
+	else
+		# Removing Yasm support because Meson adds optimization flags
+		# which it doesn't support.
+		# https://github.com/mesonbuild/meson/issues/11726
+		yasm_exe = disabler()
+	endif
 	# Adding Meson overrides manually.
-	if not nasm_exe.found() # and not yasm_exe.found()
+	if not nasm_exe.found() and not yasm_exe.found()
 		if host_machine.system() == 'windows'
 			nasm_exe = find_program('nasm_windows_exe')
 		elif host_machine.system() == 'darwin'
@@ -1037,10 +1041,8 @@ elif tgt_isa.startswith('x86')
 				error('unexpected nasm version string: @0@'.format(out))
 			endif
 		endif
-	# else
-	# 	if yasm_exe.found()
-	# 		as = 'yasm'
-	# 	endif
+	elif yasm_exe.found()
+		as = 'yasm'
 	endif
 
 	if as == 'auto'
