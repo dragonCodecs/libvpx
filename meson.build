@@ -641,7 +641,7 @@ if tgt_os == 'solaris'
 	extra_libs += c.find_library('posix4', required: true)
 endif
 
-if tgt_isa == 'arm' or tgt_isa == 'arm64'
+if tgt_isa.startswith('arm')
 	feature = 'neon'
 	if features.get(feature, true)
 		if not features.has(feature)
@@ -650,7 +650,7 @@ if tgt_isa == 'arm' or tgt_isa == 'arm64'
 		features.set(feature, true)
 	endif
 
-	if tgt_isa == 'arm'
+	if tgt_isa == 'armv7'
 		# Only enable neon_asm when neon is also enabled.
 		if features.get('neon', false)
 			feature = 'neon_asm'
@@ -687,7 +687,7 @@ if tgt_isa == 'arm' or tgt_isa == 'arm64'
 			features.set('thumb', true)
 		endif
 
-		if features.get('thumb', true)
+		if features.get('thumb', false)
 			asm_conversion_cmd += ['-thumb']
 			gcc_flags = ['-mthumb', '-Wa,-mimplicit-it=always']
 			add_project_arguments(c.get_supported_arguments(gcc_flags), language: 'c') #-ftree-vectorize
@@ -1613,10 +1613,12 @@ codec_arch_libs = []
 config_asm_generator = find_program('meson/transform_config_asm.py', required: true)
 
 if asm_conversion_exe.found()
+	# Android expects conversion to output ".asm" to ".asm.S"
+	# See e.g. idct_neon.asm
 	asm_transformer = generator(
 		find_program('meson/stdinout_wrapper.py', required: true),
 		arguments: ['--input', '@INPUT@', '--output', '@OUTPUT@', asm_conversion_exe.full_path()] + asm_conversion_cmd,
-		output: '@0@.@1@'.format('@BASENAME@', as_sfx)
+		output: '@0@@1@'.format('@PLAINNAME@', as_sfx)
 	)
 endif
 
