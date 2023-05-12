@@ -20,7 +20,7 @@ def parse_options(lines: list[str]) -> dict:
 		if option:
 			current_options[option.group(2).lower().replace('-', '_')] = {
 				'type': 'boolean',
-				'value': 'true' if option.group(1) == 'disable' else 'unset',
+				'value': 'enabled' if option.group(1) == 'disable' else 'unset',
 				'description': option.group(3).strip()
 			}
 			continue
@@ -37,25 +37,25 @@ def parse_options(lines: list[str]) -> dict:
 			feature = option.group(2).strip()
 			current_options[f'{option.group(1)}_{feature}'.lower().replace('-', '_')] = {
 				'type': 'boolean',
-				'value': 'true' if option.group(1) == 'disable' else 'unset',
+				'value': 'enabled' if option.group(1) == 'disable' else 'unset',
 				'description': f'Enable the {option.group(1).upper()} {feature} only'
 			}
 			if option.group(3):
 				additional_feature = option.group(3).strip()
 				current_options[f'{option.group(1)}_{additional_feature}'.lower().replace('-', '_')] = {
 					'type': 'boolean',
-					'value': 'true' if option.group(1) == 'disable' else 'unset',
+					'value': 'enabled' if option.group(1) == 'disable' else 'unset',
 					'description': f'Enable the {option.group(1).upper()} {additional_feature} only'
 				}
 				current_options[f'{option.group(1)}'.lower().replace('-', '_')] = {
 					'type': 'boolean',
-					'value': 'true' if option.group(1) == 'disable' else 'unset',
+					'value': 'enabled' if option.group(1) == 'disable' else 'unset',
 					'description': f'Enable the {option.group(1).upper()} codec'
 				}
 			else:
 				current_options[f'{option.group(1)}'.lower().replace('-', '_')] = {
 					'type': 'boolean',
-					'value': 'true' if option.group(1) == 'disable' else 'unset',
+					'value': 'enabled' if option.group(1) == 'disable' else 'unset',
 					'description': f'Enable the {option.group(1).upper()} {feature}'
 				}
 			continue
@@ -90,6 +90,7 @@ MESON_HANDLED_OPTIONS = [
 	'static',
 	'small',
 	'static_msvcrt',
+	'debug_libs',
 	'install_srcs',
 ]
 
@@ -116,7 +117,7 @@ def update_meson_options(options: dict):
 							value = f"value: '{kv['value']}', "
 						else:
 							value = ''
-						lines.append(f"option('{key}', type: 'combo', choices: ['unset', 'true', 'false'], {value}description: '{kv['description']}')\n")
+						lines.append(f"option('{key}', type: 'feature', {value}description: '{kv['description']}')\n")
 					else:
 						if kv.get('value') and len(kv['value']) != 0:
 							value = f"value: '{kv['value']}', "

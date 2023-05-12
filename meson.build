@@ -317,8 +317,6 @@ MESON_OPTIONS = [
 	'decode_perf_tests',
 	'encode_perf_tests',
 	'codec_srcs',
-	'debug_libs',
-	'static_msvcrt',
 	'vp9_highbitdepth',
 	'better_hw_compatibility',
 	'vp8',
@@ -350,6 +348,16 @@ VAR_LIST = []
 
 # process #
 
+if not get_option('auto_features').auto()
+	error('''
+		libvpx relies on feature options to enable components conditionally.
+		If you need to disable features manually, please use:
+		- the individual toggles,
+		- the enable_features and disable_features string options, for conditional setting
+		- the force_enable_features and force_enable_features string options, for forcing a value irrespective of the architecture configuration.
+	''')
+endif
+
 ## process_cmdline ##
 
 features.set('extra_warnings', not ['0', '1'].contains(get_option('warning_level')))
@@ -366,8 +374,8 @@ foreach flag: CMDLINE_SELECT
 		continue
 	elif MESON_OPTIONS.contains(flag)
 		value = get_option(flag)
-		if value != 'unset'
-			features.set(flag, value == 'true')
+		if not value.auto()
+			features.set(flag, value.enabled())
 		endif
 	elif flag == 'size_limit'
 		size_limit_value = get_option('size_limit')
@@ -1012,7 +1020,7 @@ elif tgt_isa.startswith('x86')
 	else
 		# Removing Yasm support because Meson adds optimization flags
 		# which it doesn't support.
-		# https://github.com/mesonbuild/meson/issues/11726
+		# https://github.com/mesonbuild/meson/issues/11726
 		yasm_exe = disabler()
 	endif
 	# Adding Meson overrides manually.
