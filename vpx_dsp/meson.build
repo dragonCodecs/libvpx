@@ -882,7 +882,6 @@ if features.get('vp9', true) # MANUAL
 	if features.get('neon_asm', false)
 		dsp_sources += asm_transformer.process(
 			files(
-				'arm/idct_neon.asm',
 				'arm/idct4x4_1_add_neon.asm',
 				'arm/idct4x4_add_neon.asm',
 			)
@@ -1148,6 +1147,8 @@ if not features.get('encoders', false) or not features.get('postproc', false) or
 endif
 
 #### --- END GENERATED --- ####
+
+subdir('arm')
 
 codec_srcs += dsp_sources
 optional_sources = get_variable('dsp_optional_sources', {})

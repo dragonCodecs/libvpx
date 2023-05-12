@@ -1615,8 +1615,9 @@ config_asm_generator = find_program('meson/transform_config_asm.py', required: t
 if asm_conversion_exe.found()
 	# Android expects conversion to output ".asm" to ".asm.S"
 	# See e.g. idct_neon.asm
+	stdinout_wrapper_exe = find_program('meson/stdinout_wrapper.py', required: true)
 	asm_transformer = generator(
-		find_program('meson/stdinout_wrapper.py', required: true),
+		stdinout_wrapper_exe,
 		arguments: ['--input', '@INPUT@', '--output', '@OUTPUT@', asm_conversion_exe.full_path()] + asm_conversion_cmd,
 		output: '@0@@1@'.format('@PLAINNAME@', as_sfx)
 	)
@@ -1635,7 +1636,7 @@ elif asm_conversion_exe.found()
 		output: 'vpx_config.adstmp',
 	)
 	config_asm = configure_file(
-		command: [asm_conversion_exe] + asm_conversion_cmd,
+		command: [stdinout_wrapper_exe, '--input', '@INPUT@', '--output', '@OUTPUT@', asm_conversion_exe.full_path()] + asm_conversion_cmd,
 		input: ads_config_asm,
 		output: 'vpx_config.asm',
 	)
